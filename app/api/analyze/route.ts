@@ -63,7 +63,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalysisRespo
     }
 
     // Run live SerpApi query
-    const apiKey = process.env.SERPAPI_API_KEY!.trim();
+    const apiKey = process.env.SERPAPI_API_KEY!.replace(/["']/g, '').trim();
     try {
       const { listings, isCached } = await executeMarketSearch(hub, radiusKm, apiKey);
 
