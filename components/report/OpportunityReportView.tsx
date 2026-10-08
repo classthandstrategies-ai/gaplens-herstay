@@ -220,9 +220,21 @@ export function OpportunityReportView({
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Sampled Reviews:</span>
+                <span className="text-slate-500">Properties with Reviews:</span>
+                <span className="font-semibold text-slate-800">
+                  {metrics.listingsWithReviewsCount} of {metrics.listingsInRadius}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Total Reviews Analyzed:</span>
                 <span className="font-semibold text-slate-800">
                   {metrics.totalReviewsAnalyzed}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Avg Rating (Rated Stays):</span>
+                <span className="font-semibold text-slate-800">
+                  {metrics.averageRating !== null ? `★ ${metrics.averageRating}` : 'N/A'}
                 </span>
               </div>
             </div>
@@ -268,9 +280,13 @@ export function OpportunityReportView({
                     {formatStraightLineDistance(item.distanceKm)}
                   </td>
                   <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1 font-semibold text-slate-900">
-                      ★ {item.rating.toFixed(1)}
-                    </span>
+                    {item.rating !== null ? (
+                      <span className="inline-flex items-center gap-1 font-semibold text-slate-900">
+                        ★ {item.rating.toFixed(1)}
+                      </span>
+                    ) : (
+                      <span className="text-[11px] text-slate-400 font-medium">Unrated</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-slate-600">{item.reviewCount}</td>
                   <td className="px-4 py-3">

@@ -4,43 +4,64 @@ This guide provides the exact demonstration walkthrough and spoken script for th
 
 ---
 
-## 📹 Video Recording Guide (Total Time: ~2 min 50 sec)
+## 📹 Video Recording Guide (Total Time: ~2 min 45 sec)
 
 ### Segment 1: The Problem (0:00 – 0:20)
-- **Visual**: Start on the GapLens homepage at `http://localhost:3000` (or `https://gaplens-herstay.vercel.app`).
+- **Visual**: Start on the GapLens homepage running locally at `http://localhost:3000` (or `https://gaplens-herstay.vercel.app`).
 - **Narrative**:
-  > *"When women relocate for work near major tech parks in India, finding housing that balances reasonable pricing, safety, dependable hygiene, and privacy is a persistent challenge. Meanwhile, PG entrepreneurs lack evidence-backed tools to spot where existing accommodations are failing residents. A tech corridor might have dozens of hostels, but still suffer from a deep quality gap. That's why we built **GapLens HerStay Intelligence**."*
+  > *"When women relocate for work near major tech parks in India, finding housing that combines reasonable pricing, dependable hygiene, and privacy is a persistent challenge. Meanwhile, PG entrepreneurs lack empirical tools to identify neighborhoods where existing accommodations fall short of tenant expectations. A tech corridor might have dozens of hostels, but still suffer from a measurable quality gap. That is why we built **GapLens HerStay Intelligence**."*
 
 ### Segment 2: Market Selection (0:20 – 0:40)
-- **Visual**: Scroll to the Market Explorer. Select **Bengaluru**, choose **Manyata Tech Park**, and adjust the radius slider to **3.5 km**.
+- **Visual**: In the Market Explorer, select **Bengaluru**, choose **Manyata Tech Park**, and set the analysis radius to **3.5 km**.
 - **Narrative**:
-  > *"Here we select our demonstration market: Manyata Tech Park in North Bengaluru, which employs over 150,000 professionals across companies like IBM, Cognizant, and Target. We set our analysis perimeter to a 3.5 km straight-line radius around the main gate."*
+  > *"Here we select our demonstration market: Manyata Tech Park in North Bengaluru, anchored near Nagawara and Hebbal. We establish an analysis perimeter of 3.5 km straight-line radius around the main gate."*
 
 ### Segment 3: Live SerpApi Investigation (0:40 – 1:15)
-- **Visual**: Click the **Analyze Accommodation Supply** button. Show the live query status, which calls SerpApi's `google_maps` and `google_maps_reviews` engines.
+- **Visual**: Click **Analyze Accommodation Supply**. Show the server-side SerpApi retrieval querying `google_maps` and `google_maps_reviews`.
 - **Narrative**:
-  > *"Clicking 'Analyze Accommodation Supply' triggers our server-side SerpApi engine. Rather than relying on static or sponsored listings, GapLens queries real-time Google Maps search data, deduplicates multi-query listings, verifies coordinate boundaries, and retrieves authentic resident reviews with intelligent 24-hour caching."*
+  > *"Clicking 'Analyze Accommodation Supply' executes our server-side SerpApi engine. Rather than relying on sponsored listings or static directories, GapLens runs targeted public Google Maps searches, deduplicates listings, computes spherical distances from the gate, and retrieves authentic resident reviews with intelligent caching."*
 
-### Segment 4: Geographic Map, Listings & Verbatim Review Evidence (1:15 – 1:55)
-- **Visual**: Pan through the interactive Leaflet map markers. Click on accommodations near Nagawara and Thanisandra Main Road. Open the **Inspect Evidence** modal to show verbatim resident quotes. Show the **Resident Friction Breakdown** chart below.
+### Segment 4: Geographic Supply & Actual Review Evidence (1:15 – 1:55)
+- **Visual**: Pan through the interactive Leaflet map markers. Click on accommodations such as *New Sns Reddy Ladies Pg* (0.58 km straight-line) and *Good Lands PG For Ladies* (0.60 km straight-line). Open the **Inspect Evidence** modal to show verbatim resident quotes. Show the **Resident Friction Breakdown** chart below.
 - **Narrative**:
-  > *"In seconds, GapLens maps 24 verified accommodations. Each marker shows public Google ratings and straight-line distance to the office park gate. When we inspect individual properties, we can read actual reviewer quotes — surfacing recurring complaints like bathroom hygiene, unannounced warden entry, or unrefunded security deposits. The Resident Friction Breakdown aggregates these complaints into 9 critical operational categories."*
+  > *"In seconds, GapLens identifies 24 public accommodations within the 3.5 km radius. Notice each pin displays public Google ratings or indicates unrated properties without substituting fake defaults. Clicking any listing reveals verbatim reviewer accounts — highlighting specific friction points such as washroom cleanliness, maintenance response times, or curfew policies. The Resident Friction Breakdown categorizes these feedback signals across 9 operational themes."*
 
-### Segment 5: The Opportunity Dossier (1:55 – 2:25)
-- **Visual**: Click **View Opportunity Report** (or navigate to the Opportunity Report tab). Scroll through the core hypothesis, spatial distribution pockets, and competitor matrix.
+### Segment 5: Evidence-Backed Opportunity Hypothesis (1:55 – 2:25)
+- **Visual**: Click **View Opportunity Report**. Scroll through the core hypothesis, spatial distribution pockets, and competitor matrix.
 - **Narrative**:
-  > *"Next, the Opportunity Report synthesizes this public search evidence into an actionable business hypothesis. For Manyata, GapLens reveals a 'Quality & Hygiene Deficit' — meaning demand is high, but existing options suffer from maintenance friction. It identifies specific spatial pockets within 1.5 km of the gate where premium, well-managed women's housing can easily capture dissatisfied tenants paying equivalent rates for substandard infrastructure."*
+  > *"The Opportunity Report synthesizes this public search evidence into a structured market thesis. For Manyata, GapLens highlights a 'Quality & Hygiene Deficit' based on recurring tenant feedback across sampled reviews. It breaks down spatial pockets — showing how supply clusters within 1.5 km of the gate versus the outer transit belts, giving operators a clear, data-grounded starting point for on-the-ground feasibility studies."*
 
-### Segment 6: Architecture & Attribution (2:25 – 2:50)
-- **Visual**: Click on the **Methodology** tab. Show the pipeline architecture diagram and SerpApi attribution.
+### Segment 6: Architecture, Transparency & SerpApi Dependency (2:25 – 2:45)
+- **Visual**: Switch to the **Methodology** tab. Show the pipeline architecture diagram and SerpApi attribution.
 - **Narrative**:
-  > *"GapLens is powered by SerpApi's Maps and Reviews APIs, built on Next.js 16, TypeScript, Tailwind CSS, and Leaflet. All distance calculations are spherical straight-line calculations, and tenant quotes are ethically framed as subjective reviewer feedback rather than verified allegations. GapLens turns public search data into evidence-backed market intelligence."*
+  > *"GapLens is built on Next.js 16, TypeScript, Tailwind CSS, and Leaflet, powered directly by SerpApi's Google Maps and Reviews APIs. All distance calculations are direct straight-line calculations, and review snippets are framed as subjective resident feedback rather than verified claims. SerpApi enables us to transform unstructured public search listings into transparent market intelligence."*
 
 ---
 
-## 🚀 Live Links for Submission
+## 🛠 Local Setup Instructions (For Recording Video Locally)
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/classthandstrategies-ai/gaplens-herstay.git
+cd gaplens-herstay
+
+# 2. Install dependencies
+npm install
+
+# 3. Add your SerpApi Key to .env.local
+echo 'SERPAPI_API_KEY="your_serpapi_key_here"' > .env.local
+
+# 4. Start local production build or development server
+npm run build
+npm run start
+```
+Open `http://localhost:3000` to record the walkthrough.
+
+---
+
+## 🚀 Live Submission Links
 
 - **Live Production Application**: [https://gaplens-herstay.vercel.app](https://gaplens-herstay.vercel.app)
-- **GitHub Repository**: [https://github.com/classthandstrategies-ai/gaplens-herstay](https://github.com/classthandstrategies-ai/gaplens-herstay)
+- **Public GitHub Repository**: [https://github.com/classthandstrategies-ai/gaplens-herstay](https://github.com/classthandstrategies-ai/gaplens-herstay)
 - **Track**: Commerce & Market Intelligence
 - **Deadline**: October 10, 2026, 23:59 IST

@@ -48,7 +48,7 @@ export interface ThemeSnippet {
 export interface ReviewItem {
   id: string;
   author: string;
-  rating: number;
+  rating: number | null;
   text: string;
   date?: string;
   link?: string;
@@ -61,7 +61,7 @@ export interface PlaceListing {
   placeId?: string;
   title: string;
   address: string;
-  rating: number;
+  rating: number | null; // null represents unrated/unknown rating
   reviewCount: number;
   coordinates: Coordinates;
   distanceKm: number; // Straight-line distance in km from hub
@@ -103,8 +103,10 @@ export interface MarketGapHypothesis {
 export interface MarketMetrics {
   totalListingsFound: number;
   listingsInRadius: number;
+  listingsWithReviewsCount: number; // Distinct properties with analyzed reviews
+  ratedListingsCount: number; // Distinct properties with verified public rating
   totalReviewsAnalyzed: number;
-  averageRating: number;
+  averageRating: number | null; // null if no rated properties exist
   medianReviewCount: number;
   supplyDensityKm2: number;
   supplyVisibility: 'high' | 'moderate' | 'sparse';

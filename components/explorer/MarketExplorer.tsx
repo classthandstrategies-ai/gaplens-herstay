@@ -71,7 +71,7 @@ export function MarketExplorer({
   const sortedListings = [...initialReport.listings].sort((a, b) => {
     if (sortBy === 'distance') return a.distanceKm - b.distanceKm;
     if (sortBy === 'friction') return (b.themeFrictionScore || 0) - (a.themeFrictionScore || 0);
-    if (sortBy === 'rating') return b.rating - a.rating;
+    if (sortBy === 'rating') return (b.rating ?? -1) - (a.rating ?? -1);
     return 0;
   });
 
@@ -253,14 +253,14 @@ export function MarketExplorer({
 
             <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
               <span className="text-[11px] font-semibold text-slate-500 uppercase">
-                Reviews Sampled
+                Reviews Analyzed
               </span>
               <div className="mt-1 flex items-baseline gap-1.5">
                 <span className="text-xl font-bold text-slate-900">
                   {initialReport.metrics.totalReviewsAnalyzed}
                 </span>
                 <span className="text-[10px] font-medium text-slate-500">
-                  med. {initialReport.metrics.medianReviewCount}
+                  across {initialReport.metrics.listingsWithReviewsCount} places
                 </span>
               </div>
             </div>

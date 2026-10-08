@@ -16,12 +16,25 @@ export function PropertyCard({
   isSelected,
   onSelect,
 }: PropertyCardProps) {
-  const ratingColor =
-    listing.rating >= 3.8
-      ? 'bg-teal-50 text-teal-800 border-teal-200'
-      : listing.rating >= 3.4
-      ? 'bg-amber-50 text-amber-800 border-amber-200'
-      : 'bg-rose-50 text-rose-800 border-rose-200';
+  const ratingBadge =
+    listing.rating !== null ? (
+      <div
+        className={`flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-bold ${
+          listing.rating >= 3.8
+            ? 'bg-teal-50 text-teal-800 border-teal-200'
+            : listing.rating >= 3.4
+            ? 'bg-amber-50 text-amber-800 border-amber-200'
+            : 'bg-rose-50 text-rose-800 border-rose-200'
+        }`}
+      >
+        <Star className="h-3 w-3 fill-current" />
+        <span>{listing.rating.toFixed(1)}</span>
+      </div>
+    ) : (
+      <div className="flex items-center rounded-md border border-slate-200 bg-slate-100 px-2 py-1 text-[11px] font-medium text-slate-500">
+        <span>Unrated</span>
+      </div>
+    );
 
   return (
     <div
@@ -49,13 +62,8 @@ export function PropertyCard({
           </h3>
         </div>
 
-        {/* Rating badge */}
-        <div
-          className={`flex items-center gap-1 rounded-md border px-2 py-1 text-xs font-bold ${ratingColor}`}
-        >
-          <Star className="h-3 w-3 fill-current" />
-          <span>{listing.rating.toFixed(1)}</span>
-        </div>
+        {/* Rating badge with null safety */}
+        {ratingBadge}
       </div>
 
       {/* Address */}
@@ -89,7 +97,9 @@ export function PropertyCard({
       {/* Action footer */}
       <div className="mt-3 flex items-center justify-between text-xs pt-2 border-t border-slate-100">
         <span className="text-slate-500">
-          {listing.reviewCount} total review(s)
+          {listing.reviewCount > 0
+            ? `${listing.reviewCount} total review(s)`
+            : 'No public reviews'}
         </span>
 
         <div className="flex items-center gap-2">

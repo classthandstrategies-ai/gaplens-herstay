@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getHubById, getDefaultHub } from '@/lib/markets/data';
+import { getHubById } from '@/lib/markets/data';
 import { isSerpApiKeyConfigured, executeMarketSearch } from '@/lib/serpapi/client';
 import { buildAnalysisReport } from '@/lib/analysis/gapEngine';
 import { getSampleListingsForHub } from '@/lib/sample/sampleData';
@@ -32,13 +32,27 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalysisRespo
       );
     }
 
-    const { hubId, radiusKm } = parseResult.data;
-    const hub = getHubById(hubId) || getDefaultHub();
+    const { hubId, radiusKm, forceRefresh } = parseResult.data;
+
+    // Reject unknown hubs explicitly: DO NOT silently fall back to default market
+    const hub = getHubById(hubId);
+    if (!hub) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: `Unrecognized employment hub ID: '${hubId}'.`,
+          details:
+            "Supported hub IDs are 'manyata-tech-park-blr', 'hinjewadi-it-park-pune', or 'gachibowli-financial-district-hyd'.",
+          code: 'INVALID_PARAMS',
+        },
+        { status: 400 }
+      );
+    }
 
     const hasApiKey = isSerpApiKeyConfigured();
 
     if (!hasApiKey) {
-      // Return illustrative demo dataset with transparent labeling
+      // In illustrative demo mode (explicit key missing), serve calibrated sample baseline with transparent disclosure
       const allSample = getSampleListingsForHub(hub);
       const filtered = allSample.filter((l) =>
         isWithinRadius(hub.coordinates, l.coordinates, radiusKm)
@@ -57,7 +71,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalysisRespo
         success: true,
         data: report,
         details:
-          'SERPAPI_API_KEY is not configured in the environment. Serving calibrated illustrative demonstration dataset. Configure SERPAPI_API_KEY in .env.local to run live public Maps & Reviews scans.',
+          'SERPAPI_API_KEY is not configured in the environment. Serving calibrated illustrative demonstration dataset. Configure SERPAPI_API_KEY in .env.local or Vercel environment to execute live Google Maps & Reviews scans.',
         code: 'KEY_MISSING',
       });
     }
@@ -65,7 +79,12 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalysisRespo
     // Run live SerpApi query
     const apiKey = process.env.SERPAPI_API_KEY!.replace(/["']/g, '').trim();
     try {
-      const { listings, isCached } = await executeMarketSearch(hub, radiusKm, apiKey);
+      const { listings, isCached } = await executeMarketSearch(
+        hub,
+        radiusKm,
+        apiKey,
+        forceRefresh
+      );
 
       const dataSource = isCached ? 'cached_serpapi' : 'live_serpapi';
       const report = buildAnalysisReport(
@@ -83,32 +102,19 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalysisRespo
         code: 'OK',
       });
     } catch (apiErr: unknown) {
-      console.error('SerpApi live query failed:', apiErr);
-      const message = apiErr instanceof Error ? apiErr.message : 'Unknown SerpApi error';
+      const message = apiErr instanceof Error ? apiErr.message : String(apiErr);
+      console.error('SerpApi live query failed:', message);
 
-      // Fallback gracefully to illustrative baseline with clear warning
-      const allSample = getSampleListingsForHub(hub);
-      const filtered = allSample.filter((l) =>
-        isWithinRadius(hub.coordinates, l.coordinates, radiusKm)
-      );
-
-      const report = buildAnalysisReport(
-        hub,
-        radiusKm,
-        filtered,
-        'illustrative_sample',
-        Date.now() - startTime,
-        new Date().toISOString()
-      );
-
+      // Return explicit error state: NEVER silently fabricate or replace failed live searches with sample data
       return NextResponse.json(
         {
-          success: true,
-          data: report,
-          error: `Live search query encountered an error: ${message}. Showing illustrative baseline data.`,
+          success: false,
+          error: `Live SerpApi search query failed: ${message}`,
+          details:
+            'The live search pipeline encountered an error. Live requests are not silently substituted with fabricated data.',
           code: 'NETWORK_ERROR',
         },
-        { status: 200 }
+        { status: 502 }
       );
     }
   } catch (err: unknown) {

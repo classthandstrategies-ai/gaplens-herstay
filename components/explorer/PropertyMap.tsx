@@ -68,10 +68,16 @@ function createHubIcon() {
   });
 }
 
-function createPropertyIcon(rating: number, isSelected: boolean) {
-  let bgColor = '#0d9488'; // Teal
-  if (rating < 3.4) bgColor = '#e11d48'; // Rose
-  else if (rating < 3.8) bgColor = '#d97706'; // Amber
+function createPropertyIcon(rating: number | null, isSelected: boolean) {
+  let bgColor = '#64748b'; // Slate for unrated
+  let text = '•';
+
+  if (rating !== null) {
+    text = rating.toFixed(1);
+    if (rating >= 3.8) bgColor = '#0d9488'; // Teal
+    else if (rating >= 3.4) bgColor = '#d97706'; // Amber
+    else bgColor = '#e11d48'; // Rose
+  }
 
   const size = isSelected ? 34 : 28;
   const borderWidth = isSelected ? 3 : 2;
@@ -89,13 +95,13 @@ function createPropertyIcon(rating: number, isSelected: boolean) {
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 11px;
+        font-size: ${rating !== null ? '11px' : '14px'};
         font-weight: 700;
         box-shadow: 0 3px 10px rgba(0,0,0,0.25);
         transform: ${isSelected ? 'scale(1.15)' : 'scale(1)'};
         transition: transform 0.2s ease;
       ">
-        ${rating.toFixed(1)}
+        ${text}
       </div>
     `,
     iconSize: [size, size],
@@ -189,9 +195,15 @@ export default function PropertyMap({
                     <span className="text-[10px] font-medium text-slate-500 uppercase">
                       {listing.category || "Women's Stay"}
                     </span>
-                    <span className="flex items-center gap-0.5 rounded bg-amber-50 px-1.5 py-0.5 text-xs font-semibold text-amber-900">
-                      ★ {listing.rating.toFixed(1)} ({listing.reviewCount})
-                    </span>
+                    {listing.rating !== null ? (
+                      <span className="flex items-center gap-0.5 rounded bg-amber-50 px-1.5 py-0.5 text-xs font-semibold text-amber-900">
+                        ★ {listing.rating.toFixed(1)} ({listing.reviewCount})
+                      </span>
+                    ) : (
+                      <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
+                        Unrated
+                      </span>
+                    )}
                   </div>
                   <h4 className="mt-1 font-semibold text-slate-900 text-sm leading-tight">
                     {listing.title}

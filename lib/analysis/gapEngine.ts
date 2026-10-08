@@ -5,6 +5,7 @@ import {
   MarketMetrics,
   PlaceListing,
   ThemeAggregate,
+  ThemeCategory,
 } from '../types';
 import { extractReviewThemes } from './themeExtractor';
 
@@ -16,11 +17,12 @@ export const METHODOLOGY_LIMITATIONS: string[] = [
   'Online reviews represent subjective resident and visitor feedback and cannot verify physical vacancy rates, financial health, or formal legal compliance.',
   'Security and safety mentions in customer reviews are unverified personal assertions and do not constitute an official municipal or police security audit.',
   'Distances shown are direct straight-line spherical calculations from the primary hub coordinate and do not reflect peak-hour road traffic or transit detours.',
-  'Identified opportunities represent potential supply-quality market gaps indicated by friction in publicly available search data, not guaranteed commercial returns.',
+  'Identified opportunities represent potential supply-quality market gaps indicated by friction in publicly available search data, not guaranteed commercial returns or demand forecasts.',
+  'Rental rates and pricing indicators are noted only where publicly listed; rental affordability should be independently confirmed via primary market research.',
 ];
 
 /**
- * Computes high-level market metrics
+ * Computes high-level market metrics with strict evidence grounding
  */
 export function computeMarketMetrics(
   listings: PlaceListing[],
@@ -37,6 +39,11 @@ export function computeMarketMetrics(
   if (listingsInRadius >= 18) supplyVisibility = 'high';
   else if (listingsInRadius >= 7) supplyVisibility = 'moderate';
 
+  // Count how many distinct properties in this radius actually have review coverage
+  const listingsWithReviewsCount = listings.filter(
+    (l) => l.reviewsSample && l.reviewsSample.length > 0
+  ).length;
+
   // Calculate weighted friction index based on negative complaints frequency
   const totalNegativeMentions = themeAggregates.reduce(
     (sum, t) => sum + t.negativeCount,
@@ -51,16 +58,20 @@ export function computeMarketMetrics(
         )
       : 0;
 
-  // Average rating
-  const ratings = listings.map((l) => l.rating).filter((r) => r > 0);
-  const averageRating =
-    ratings.length > 0
-      ? Math.round(
-          (ratings.reduce((acc, r) => acc + r, 0) / ratings.length) * 10
-        ) / 10
-      : 0;
+  // Average rating calculated strictly from listings with verified public ratings
+  const validRatings = listings
+    .map((l) => l.rating)
+    .filter((r): r is number => r !== null && typeof r === 'number' && r > 0);
 
-  // Median review count
+  const ratedListingsCount = validRatings.length;
+  const averageRating =
+    ratedListingsCount > 0
+      ? Math.round(
+          (validRatings.reduce((acc, r) => acc + r, 0) / ratedListingsCount) * 10
+        ) / 10
+      : null;
+
+  // Median review count among discovered listings
   const sortedReviewCounts = listings
     .map((l) => l.reviewCount)
     .sort((a, b) => a - b);
@@ -74,29 +85,30 @@ export function computeMarketMetrics(
           (sortedReviewCounts[mid - 1] + sortedReviewCounts[mid]) / 2
         );
 
-  // Evidence confidence rating
+  // Evidence confidence rating accounting for review coverage breadth across properties
   let evidenceConfidence: 'high' | 'moderate' | 'cautious' | 'insufficient' =
     'cautious';
   let confidenceReason = '';
 
-  if (listingsInRadius < 3 || totalReviewsSampled < 5) {
+  if (listingsInRadius < 3 || listingsWithReviewsCount < 2 || totalReviewsSampled < 4) {
     evidenceConfidence = 'insufficient';
-    confidenceReason =
-      'Fewer than 3 verified listings or 5 sampled reviews retrieved in this radius. Conclusions are tentative.';
-  } else if (listingsInRadius >= 12 && totalReviewsSampled >= 25) {
+    confidenceReason = `Limited search evidence: only ${listingsWithReviewsCount} property/properties have review coverage in this radius (${totalReviewsSampled} reviews sampled across ${listingsInRadius} discovered listings). Findings should be treated as initial directional indicators requiring field validation.`;
+  } else if (listingsWithReviewsCount >= 8 && totalReviewsSampled >= 20) {
     evidenceConfidence = 'high';
-    confidenceReason = `Robust evidence base: ${listingsInRadius} verified listings and ${totalReviewsSampled} sampled resident reviews examined.`;
-  } else if (listingsInRadius >= 6 && totalReviewsSampled >= 12) {
+    confidenceReason = `Substantial review coverage across ${listingsWithReviewsCount} separate properties with ${totalReviewsSampled} sampled resident reviews examined.`;
+  } else if (listingsWithReviewsCount >= 3 && totalReviewsSampled >= 8) {
     evidenceConfidence = 'moderate';
-    confidenceReason = `Moderate evidence: ${listingsInRadius} listings and ${totalReviewsSampled} reviews within ${radiusKm} km radius.`;
+    confidenceReason = `Moderate coverage: ${listingsWithReviewsCount} of ${listingsInRadius} properties have review data (${totalReviewsSampled} reviews sampled within ${radiusKm} km radius).`;
   } else {
     evidenceConfidence = 'cautious';
-    confidenceReason = `Limited sample size (${listingsInRadius} listings, ${totalReviewsSampled} reviews). Treat findings as directional indicators.`;
+    confidenceReason = `Selective review coverage: review evidence is available for ${listingsWithReviewsCount} of ${listingsInRadius} discovered properties (${totalReviewsSampled} reviews sampled). Observations represent this sample rather than a comprehensive market census.`;
   }
 
   return {
     totalListingsFound: listings.length,
     listingsInRadius,
+    listingsWithReviewsCount,
+    ratedListingsCount,
     totalReviewsAnalyzed: totalReviewsSampled,
     averageRating,
     medianReviewCount,
@@ -106,6 +118,19 @@ export function computeMarketMetrics(
     evidenceConfidence,
     confidenceReason,
   };
+}
+
+/**
+ * Helper to extract unique dominant complaint tags from a list of properties
+ */
+function getDominantComplaintsFromListings(listings: PlaceListing[]): ThemeCategory[] {
+  const categories = new Set<ThemeCategory>();
+  listings.forEach((l) => {
+    if (l.dominantComplaints) {
+      l.dominantComplaints.forEach((c) => categories.add(c));
+    }
+  });
+  return Array.from(categories);
 }
 
 /**
@@ -121,17 +146,17 @@ export function generateOpportunityHypothesis(
     return {
       headline: `Insufficient Search Evidence Near ${hub.name}`,
       opportunityType: 'quality_upgrade',
-      summary: `Current public listings within the search perimeter do not provide enough reviews to formulate an evidence-backed market conclusion. Expanding radius or verifying unlisted hostels is advised.`,
+      summary: `Current public listings within the search perimeter do not provide enough reviews (${metrics.totalReviewsAnalyzed} review(s) across ${metrics.listingsWithReviewsCount} property/properties) to formulate an evidence-backed market conclusion. Expanding radius or verifying unlisted hostels is advised.`,
       actionableInsights: [
-        'Conduct physical field survey across secondary arterial access roads.',
+        'Conduct physical field survey across secondary arterial access roads to verify unlisted accommodations.',
         'Investigate whether accommodation providers rely on offline word-of-mouth rather than Google Maps listings.',
       ],
-      recommendedFocusAreas: ['Initial field reconnaissance'],
+      recommendedFocusAreas: ['Initial field reconnaissance and offline operator surveys'],
       targetPockets: [],
     };
   }
 
-  // Top complaint categories
+  // Top complaint categories that have actual negative mentions
   const topComplaints = themeAggregates
     .filter((t) => t.negativeCount > 0)
     .slice(0, 3);
@@ -146,7 +171,7 @@ export function generateOpportunityHypothesis(
   );
   const outerListings = listings.filter((l) => l.distanceKm > 3.0);
 
-  // Formulate specific thesis based on data
+  // Formulate specific thesis strictly grounded in observed data
   let headline = '';
   let opportunityType: MarketGapHypothesis['opportunityType'] = 'quality_upgrade';
   const insights: string[] = [];
@@ -157,72 +182,95 @@ export function generateOpportunityHypothesis(
     (primaryComplaint.category === 'hygiene' || primaryComplaint.category === 'maintenance')
   ) {
     opportunityType = 'quality_upgrade';
-    headline = `Quality & Hygiene Deficit: Prime Opening for Professionalized Women's Living near ${hub.name}`;
+    headline = `Quality & Hygiene Deficit: Potential Opening for Professionalized Living near ${hub.name}`;
     insights.push(
-      `Recurring resident friction centers heavily on ${primaryComplaint.label.toLowerCase()} (${primaryComplaint.negativeCount} mentions, ${primaryComplaint.frequencyPercentage}% friction frequency).`
+      `Recurring resident feedback indicates friction in ${primaryComplaint.label.toLowerCase()} (${primaryComplaint.negativeCount} negative mention(s) across sampled reviews).`
     );
     if (secondaryComplaint) {
       insights.push(
-        `Secondary dissatisfaction stems from ${secondaryComplaint.label.toLowerCase()} (${secondaryComplaint.negativeCount} complaints).`
+        `Secondary friction noted in ${secondaryComplaint.label.toLowerCase()} (${secondaryComplaint.negativeCount} mention(s)).`
       );
     }
-    focusAreas.push('Scheduled, professionalized housekeeping and hygiene SLAs');
-    focusAreas.push('Transparent, tech-enabled maintenance ticketing for plumbing and electrical faults');
+    focusAreas.push('Scheduled housekeeping protocols with documented cleanliness standards');
+    focusAreas.push('Clear maintenance ticketing and response tracking for plumbing and electrical fixtures');
   } else if (
     primaryComplaint &&
     primaryComplaint.category === 'management'
   ) {
     opportunityType = 'management_deficit';
-    headline = `Management & Trust Deficit: Opportunity for Transparent, Contract-Governed Stays near ${hub.name}`;
+    headline = `Management Transparency Opening: Demand for Structured Tenant Agreements near ${hub.name}`;
     insights.push(
-      `Tenant accounts highlight frequent management friction regarding deposit refunds, abrupt notices, or unaddressed grievances (${primaryComplaint.negativeCount} complaints).`
+      `Sampled reviews highlight tenant dissatisfaction regarding deposit return timelines, abrupt notices, or communication responsiveness (${primaryComplaint.negativeCount} mention(s)).`
     );
-    focusAreas.push('Escrow/guaranteed deposit refund timelines documented in signed digital agreements');
-    focusAreas.push('Dedicated women community managers rather than absentee property owners');
+    focusAreas.push('Written digital agreements with clear deposit refund terms and explicit timelines');
+    focusAreas.push('Designated resident community managers with transparent dispute resolution');
   } else if (closeListings.length < 3 && outerListings.length > 5) {
     opportunityType = 'accessibility_pocket';
-    headline = `Last-Mile Proximity Void: Significant Supply Cluster Pushed Beyond Comfortable Walk to ${hub.name}`;
+    headline = `Last-Mile Proximity Void: Accommodation Cluster Concentrated Beyond Immediate Walk to ${hub.name}`;
     insights.push(
-      `Only ${closeListings.length} accommodation(s) exist within 1.5 km straight-line radius of the main gates, while ${outerListings.length} cluster farther out.`
+      `Only ${closeListings.length} accommodation(s) discovered within 1.5 km straight-line radius of the main gates, while ${outerListings.length} cluster farther out.`
     );
-    focusAreas.push('Securing long-lease residential properties within direct walking corridors');
-    focusAreas.push('Dedicated shuttle van loops aligned with night and evening shift rotations');
+    focusAreas.push('Investigating property leasing feasibility within direct walking corridors to main entry gates');
+    focusAreas.push('Evaluating scheduled shuttle transit for accommodations located in outer belts');
   } else {
     opportunityType = 'underserved_premium';
-    headline = `Modern Workforce Value Gap: Demand for Full-Amenity Accommodations near ${hub.name}`;
+    headline = `Accommodation Quality Gap: Potential for Modern Women's Living near ${hub.name}`;
+    const avgRatingText = metrics.averageRating !== null ? `average rating of ${metrics.averageRating}/5` : 'unrated / mixed ratings';
     insights.push(
-      `While supply visibility is ${metrics.supplyVisibility} (${listings.length} discovered places), average rating sits at ${metrics.averageRating}/5 with noticeable friction across basic amenities and food quality.`
+      `Discovered supply visibility is ${metrics.supplyVisibility} (${listings.length} places), with an ${avgRatingText} across rated properties.`
     );
-    focusAreas.push('High-speed dual-ISP internet with full power backup for hybrid workers');
-    focusAreas.push('Nutritious, multi-regional meal planning and flexible dining windows');
+    if (primaryComplaint) {
+      insights.push(
+        `Review friction is most visible in ${primaryComplaint.label.toLowerCase()} (${primaryComplaint.negativeCount} mention(s)).`
+      );
+    }
+    focusAreas.push('High-reliability broadband connectivity with secondary power backup');
+    focusAreas.push('Multi-regional meal planning and flexible dining access windows');
   }
 
-  // Define target pockets based on actual listings distribution
+  // Construct target pockets based on real property distribution and observed complaints
+  const closeComplaints = getDominantComplaintsFromListings(closeListings);
+  const midComplaints = getDominantComplaintsFromListings(midListings);
+  const outerComplaints = getDominantComplaintsFromListings(outerListings);
+
   const targetPockets = [
     {
       name: `Immediate Hub Perimeter (< 1.5 km)`,
       distanceBand: '0.0 - 1.5 km (straight-line)',
       observation:
         closeListings.length === 0
-          ? 'Near-total absence of mapped women accommodations; prime candidate for premium micro-living.'
-          : `${closeListings.length} properties detected. Key complaints reflect high density and aging plumbing.`,
+          ? 'No discoverable women accommodations mapped within 1.5 km straight-line; potential corridor for closer walk-to-work options subject to local zoning.'
+          : `${closeListings.length} properties detected within 1.5 km. ${
+              closeComplaints.length > 0
+                ? `Associated review friction includes: ${closeComplaints.join(', ')}.`
+                : 'Limited negative friction clusters detected in sampled reviews for this belt.'
+            }`,
     },
     {
       name: `Transit Corridor Belt (1.5 - 3.0 km)`,
       distanceBand: '1.5 - 3.0 km (straight-line)',
-      observation: `${midListings.length} properties discovered. Balanced distance, but tenant reviews emphasize evening transit and auto-rickshaw availability issues.`,
+      observation: `${midListings.length} properties discovered in this middle perimeter. ${
+        midComplaints.length > 0
+          ? `Sampled resident reviews note friction in: ${midComplaints.join(', ')}.`
+          : 'Represents balanced distance; public reviews show standard residential feedback.'
+      }`,
     },
   ];
 
   if (outerListings.length > 0) {
     targetPockets.push({
-      name: `Secondary Feeder Enclave (> 3.0 km)`,
+      name: `Outer Feeder Belt (> 3.0 km)`,
       distanceBand: '3.0+ km (straight-line)',
-      observation: `${outerListings.length} properties located here. Offers lower real-estate lease costs, but requires scheduled private transit shuttles to compete effectively.`,
+      observation: `${outerListings.length} properties located beyond 3.0 km. ${
+        outerComplaints.length > 0
+          ? `Sampled reviews reflect: ${outerComplaints.join(', ')}.`
+          : 'Located farther from the primary gate; tenant access depends heavily on local road connectivity and transit.'
+      }`,
     });
   }
 
-  const summary = `Based on an examination of ${metrics.listingsInRadius} discovered accommodations and ${metrics.totalReviewsAnalyzed} sampled resident reviews around ${hub.name}, current supply exhibits a measurable quality gap in ${primaryComplaint ? primaryComplaint.label.toLowerCase() : 'facilities and consistency'}. Operators who deliver dependable hygiene, transparent deposit policies, and reliable connectivity can capture dissatisfied demand currently paying equivalent rates for substandard infrastructure.`;
+  const primaryComplaintLabel = primaryComplaint ? primaryComplaint.label.toLowerCase() : 'service consistency';
+  const summary = `Based on an examination of ${metrics.listingsInRadius} discovered accommodations and ${metrics.totalReviewsAnalyzed} sampled resident reviews around ${hub.name}, public search data indicates a potential quality-improvement opportunity in ${primaryComplaintLabel}. Operators who prioritize dependable cleanliness standards, transparent agreements, and reliable amenities can address documented resident friction observed across current offerings in this market.`;
 
   return {
     headline,
@@ -261,7 +309,7 @@ export function buildAnalysisReport(
         allReviews.push({
           text: rev.text,
           author: rev.author,
-          rating: rev.rating,
+          rating: typeof rev.rating === 'number' ? rev.rating : 3,
           date: rev.date,
           placeTitle: listing.title,
           placeId: listing.id,
@@ -272,13 +320,12 @@ export function buildAnalysisReport(
 
   const { themeAggregates, placeThemes } = extractReviewThemes(allReviews);
 
-  // Annotate listings with extracted theme complaints
+  // Annotate listings with extracted theme complaints and safely handle nullable ratings
   const enrichedListings: PlaceListing[] = rawListings.map((listing) => {
     const dominantComplaints = placeThemes.get(listing.id) || [];
-    const frictionScore = Math.min(
-      100,
-      dominantComplaints.length * 20 + Math.max(0, (4.5 - listing.rating) * 20)
-    );
+    const ratingPenalty =
+      listing.rating !== null ? Math.max(0, (4.5 - listing.rating) * 20) : 10;
+    const frictionScore = Math.min(100, dominantComplaints.length * 20 + ratingPenalty);
 
     return {
       ...listing,

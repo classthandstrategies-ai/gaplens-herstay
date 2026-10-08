@@ -63,11 +63,17 @@ export function PropertyDetailModal({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
               <div className="text-xs text-slate-500 font-medium">Public Rating</div>
-              <div className="mt-1 flex items-center gap-1 text-lg font-bold text-slate-900">
-                <Star className="h-4 w-4 fill-amber-400 text-amber-500" />
-                <span>{listing.rating.toFixed(1)}</span>
-                <span className="text-xs text-slate-500 font-normal">/ 5.0</span>
-              </div>
+              {listing.rating !== null ? (
+                <div className="mt-1 flex items-center gap-1 text-lg font-bold text-slate-900">
+                  <Star className="h-4 w-4 fill-amber-400 text-amber-500" />
+                  <span>{listing.rating.toFixed(1)}</span>
+                  <span className="text-xs text-slate-500 font-normal">/ 5.0</span>
+                </div>
+              ) : (
+                <div className="mt-1 text-sm font-semibold text-slate-500">
+                  Unrated on Maps
+                </div>
+              )}
             </div>
 
             <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
@@ -173,7 +179,7 @@ export function PropertyDetailModal({
                       </div>
                       <div className="flex items-center gap-2 text-slate-500">
                         <span className="flex items-center gap-0.5 font-medium text-amber-700">
-                          ★ {rev.rating}
+                          {rev.rating !== null ? `★ ${rev.rating}` : 'Unrated'}
                         </span>
                         <span>•</span>
                         <span>{rev.date || 'Recent'}</span>
