@@ -163,7 +163,7 @@ export function extractReviewThemes(
   reviews: Array<{
     text: string;
     author: string;
-    rating: number;
+    rating: number | null;
     date?: string;
     placeTitle: string;
     placeId: string;

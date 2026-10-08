@@ -7,6 +7,8 @@ import { getSampleListingsForHub } from '@/lib/sample/sampleData';
 import { isWithinRadius } from '@/lib/geo/distance';
 import { AnalysisResponseEnvelope } from '@/lib/types';
 
+import { checkRateLimit } from '@/lib/rateLimit';
+
 const RequestSchema = z.object({
   hubId: z.string().min(1, 'Hub ID is required'),
   radiusKm: z.number().min(0.5).max(15.0).default(3.5),
@@ -17,6 +19,29 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalysisRespo
   const startTime = Date.now();
 
   try {
+    // 1. IP Rate Limiting to prevent automated credit exhaustion
+    const clientIp =
+      req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+      req.headers.get('x-real-ip') ||
+      '127.0.0.1';
+
+    if (checkRateLimit(clientIp)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Rate limit exceeded. Please wait before requesting additional market analyses.',
+          details: 'Maximum 15 analysis scans allowed per minute per IP address.',
+          code: 'RATE_LIMITED',
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': '60',
+          },
+        }
+      );
+    }
+
     const rawBody = await req.json().catch(() => ({}));
     const parseResult = RequestSchema.safeParse(rawBody);
 
@@ -34,7 +59,33 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalysisRespo
 
     const { hubId, radiusKm, forceRefresh } = parseResult.data;
 
-    // Reject unknown hubs explicitly: DO NOT silently fall back to default market
+    // 2. Restrict forceRefresh access: Unrestricted public cache bypass is forbidden
+    if (forceRefresh) {
+      const adminHeader = req.headers.get('x-admin-key');
+      const authHeader = req.headers.get('authorization');
+      const adminSecret = process.env.ADMIN_REFRESH_SECRET;
+      const configuredApiKey = process.env.SERPAPI_API_KEY?.replace(/["']/g, '').trim();
+
+      const isAuthorized =
+        (adminSecret && adminHeader === adminSecret) ||
+        (configuredApiKey &&
+          (authHeader === `Bearer ${configuredApiKey}` || adminHeader === configuredApiKey));
+
+      if (!isAuthorized) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Unrestricted forceRefresh is disabled to prevent SerpApi credit exhaustion.',
+            details:
+              'Standard cached and live market intelligence is served automatically. Administrative authorization is required to force cache bypass.',
+            code: 'FORBIDDEN',
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    // 3. Reject unknown hubs explicitly: DO NOT silently fall back to default market
     const hub = getHubById(hubId);
     if (!hub) {
       return NextResponse.json(
@@ -64,7 +115,8 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalysisRespo
         filtered,
         'illustrative_sample',
         Date.now() - startTime,
-        new Date().toISOString()
+        new Date().toISOString(),
+        'complete'
       );
 
       return NextResponse.json({
@@ -79,12 +131,8 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalysisRespo
     // Run live SerpApi query
     const apiKey = process.env.SERPAPI_API_KEY!.replace(/["']/g, '').trim();
     try {
-      const { listings, isCached } = await executeMarketSearch(
-        hub,
-        radiusKm,
-        apiKey,
-        forceRefresh
-      );
+      const { listings, isCached, searchCoverage, partialCoverageNote } =
+        await executeMarketSearch(hub, radiusKm, apiKey, forceRefresh);
 
       const dataSource = isCached ? 'cached_serpapi' : 'live_serpapi';
       const report = buildAnalysisReport(
@@ -93,7 +141,9 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalysisRespo
         listings,
         dataSource,
         Date.now() - startTime,
-        new Date().toISOString()
+        new Date().toISOString(),
+        searchCoverage,
+        partialCoverageNote
       );
 
       return NextResponse.json({

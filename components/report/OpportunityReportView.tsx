@@ -72,6 +72,20 @@ export function OpportunityReportView({
         </div>
       </div>
 
+      {/* Partial Coverage Alert */}
+      {report.searchCoverage === 'partial' && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-xs text-amber-900 shadow-xs flex items-start gap-3">
+          <Info className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <span className="font-bold">Partial Search Coverage Alert:</span>{' '}
+            <span>
+              {report.partialCoverageNote ||
+                'One or more targeted search queries failed during data retrieval. Market results reflect partial coverage rather than a complete search scan.'}
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Primary Thesis / Executive Hypothesis Box */}
       <div className="rounded-2xl border-2 border-teal-600/30 bg-gradient-to-br from-teal-50/50 via-white to-slate-50 p-6 shadow-sm">
         <div className="flex items-center gap-2 text-teal-800 font-bold text-xs uppercase tracking-wider">

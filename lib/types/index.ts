@@ -122,6 +122,8 @@ export interface AnalysisReport {
   retrievedAt: string;
   dataSource: 'live_serpapi' | 'cached_serpapi' | 'illustrative_sample';
   apiLatencyMs?: number;
+  searchCoverage?: 'complete' | 'partial';
+  partialCoverageNote?: string;
   metrics: MarketMetrics;
   listings: PlaceListing[];
   themeBreakdown: ThemeAggregate[];
@@ -140,5 +142,5 @@ export interface AnalysisResponseEnvelope {
   data?: AnalysisReport;
   error?: string;
   details?: string;
-  code?: 'KEY_MISSING' | 'RATE_LIMITED' | 'NETWORK_ERROR' | 'INVALID_PARAMS' | 'OK';
+  code?: 'KEY_MISSING' | 'RATE_LIMITED' | 'NETWORK_ERROR' | 'INVALID_PARAMS' | 'FORBIDDEN' | 'OK';
 }

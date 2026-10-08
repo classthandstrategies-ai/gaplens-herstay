@@ -18,6 +18,7 @@ import {
   Sliders,
   Building2,
   ChevronRight,
+  AlertTriangle,
 } from 'lucide-react';
 
 // Dynamic import for Leaflet to prevent SSR window reference error
@@ -235,6 +236,20 @@ export function MarketExplorer({
 
         {/* Right Content Area: KPIs + Map/List (8 Cols) */}
         <div className="lg:col-span-8 space-y-4">
+          {/* Partial Search Coverage Warning */}
+          {initialReport.searchCoverage === 'partial' && (
+            <div className="rounded-xl border border-amber-300 bg-amber-50 p-3.5 text-xs text-amber-900 shadow-xs flex items-start gap-2.5">
+              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <span className="font-bold">Partial Search Coverage:</span>{' '}
+                <span>
+                  {initialReport.partialCoverageNote ||
+                    'One of the targeted search queries failed. Displayed accommodations represent partial search coverage.'}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Top KPI Summary Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">

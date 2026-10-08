@@ -273,6 +273,13 @@ export async function fetchPlaceReviews(
   }
 }
 
+export interface MarketSearchResult {
+  listings: PlaceListing[];
+  isCached: boolean;
+  searchCoverage: 'complete' | 'partial';
+  partialCoverageNote?: string;
+}
+
 /**
  * Orchestrates a complete market investigation using SerpApi
  */
@@ -281,7 +288,7 @@ export async function executeMarketSearch(
   radiusKm: number,
   apiKey: string,
   forceRefresh: boolean = false
-): Promise<{ listings: PlaceListing[]; isCached: boolean }> {
+): Promise<MarketSearchResult> {
   const allListings: PlaceListing[] = [];
   let wasCached = true;
   const errors: string[] = [];
@@ -310,6 +317,13 @@ export async function executeMarketSearch(
   if (successfulQueries === 0 && queriesToRun.length > 0) {
     throw new Error(`All SerpApi search queries failed: ${errors.join('; ')}`);
   }
+
+  const searchCoverage: 'complete' | 'partial' =
+    successfulQueries < queriesToRun.length ? 'partial' : 'complete';
+  const partialCoverageNote =
+    searchCoverage === 'partial'
+      ? `Partial search coverage: ${successfulQueries} of ${queriesToRun.length} targeted search queries succeeded. One or more queries failed (${errors.join('; ')}). Discovered listings represent partial market coverage.`
+      : undefined;
 
   // Deduplicate and filter by actual radius
   const deduped = deduplicateListings(allListings);
@@ -343,5 +357,7 @@ export async function executeMarketSearch(
   return {
     listings: enrichedListings,
     isCached: wasCached,
+    searchCoverage,
+    partialCoverageNote,
   };
 }
