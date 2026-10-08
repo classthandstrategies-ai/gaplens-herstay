@@ -73,8 +73,9 @@ export function OnboardingProvider({
         setActiveTab(nextStepDef.targetTab);
       }
     } else {
-      // Completed all steps
+      // Completed all steps: close tour, navigate back to Market Explorer, record completion
       setIsOpen(false);
+      setActiveTab('explorer');
       setOnboardingCompleted();
     }
   }, [currentStepIndex, totalSteps, activeTab, setActiveTab]);

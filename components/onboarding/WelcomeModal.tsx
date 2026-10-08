@@ -2,10 +2,18 @@
 
 import React from 'react';
 import { useOnboarding } from '@/lib/onboarding/OnboardingContext';
+import { useFocusTrap } from '@/lib/onboarding/useFocusTrap';
 import { Compass, Sparkles, MapPin, MessageSquareWarning, Target, X } from 'lucide-react';
 
 export function WelcomeModal() {
   const { isWelcomeOpen, startTour, dismissWelcome } = useOnboarding();
+
+  const containerRef = useFocusTrap<HTMLDivElement>({
+    isOpen: isWelcomeOpen,
+    onEscape: dismissWelcome,
+    initialFocusSelector: '#welcome-start-btn',
+    fallbackRestoreSelector: '[data-tour-trigger="true"]',
+  });
 
   if (!isWelcomeOpen) return null;
 
@@ -16,12 +24,15 @@ export function WelcomeModal() {
       aria-labelledby="welcome-modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-fadeIn"
     >
-      <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 sm:p-8 shadow-2xl transition-all">
+      <div
+        ref={containerRef}
+        className="relative w-full max-w-xl max-h-[92vh] overflow-y-auto rounded-2xl border border-slate-200/80 bg-white p-5 sm:p-8 shadow-2xl transition-all"
+      >
         {/* Close Button */}
         <button
           onClick={dismissWelcome}
           aria-label="Dismiss welcome dialog"
-          className="absolute right-4 top-4 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+          className="absolute right-4 top-4 rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
         >
           <X className="h-5 w-5" />
         </button>
@@ -61,7 +72,7 @@ export function WelcomeModal() {
             </div>
             <h3 className="text-xs font-bold text-slate-900">Supply Density</h3>
             <p className="mt-1 text-[11px] text-slate-500 leading-normal">
-              Map public PGs and hostels within 1–5 km of major tech parks.
+              Map public PGs and hostels within 1–5 km of tech corridors like Manyata Tech Park, Hinjewadi, and Gachibowli.
             </p>
           </div>
 
@@ -90,14 +101,15 @@ export function WelcomeModal() {
         <div className="mt-7 flex flex-col-reverse sm:flex-row items-center justify-between gap-3 pt-5 border-t border-slate-100">
           <button
             onClick={dismissWelcome}
-            className="w-full sm:w-auto rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
+            className="w-full sm:w-auto rounded-xl px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors cursor-pointer"
           >
             Explore on My Own
           </button>
 
           <button
+            id="welcome-start-btn"
             onClick={startTour}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-slate-800 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white shadow-md hover:bg-slate-800 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
           >
             <Sparkles className="h-4 w-4 text-teal-400" />
             <span>Show Me Around (60s Tour)</span>

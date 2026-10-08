@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useOnboarding } from '@/lib/onboarding/OnboardingContext';
+import { useFocusTrap } from '@/lib/onboarding/useFocusTrap';
 import {
   ChevronRight,
   ChevronLeft,
@@ -34,7 +35,14 @@ export function TourCoachmark() {
 
   const [targetRect, setTargetRect] = useState<ElementRect | null>(null);
   const [isMobile, setIsMobile] = useState<boolean>(false);
-  const coachmarkRef = useRef<HTMLDivElement>(null);
+
+  // Accessible keyboard trap, Tab navigation cycling, and focus restoration
+  const coachmarkRef = useFocusTrap<HTMLDivElement>({
+    isOpen,
+    onEscape: skipTour,
+    initialFocusSelector: '#coachmark-primary-btn',
+    fallbackRestoreSelector: '[data-tour-trigger="true"]',
+  });
 
   // Responsive mobile check
   useEffect(() => {
@@ -187,7 +195,7 @@ export function TourCoachmark() {
             position: 'absolute',
             top: `${Math.max(0, targetRect.top - 6)}px`,
             left: `${Math.max(0, targetRect.left - 6)}px`,
-            width: `${targetRect.width + 12}px`,
+            width: `${Math.min(targetRect.width + 12, (typeof window !== 'undefined' ? window.innerWidth : 1200) - Math.max(0, targetRect.left - 6) - 4)}px`,
             height: `${targetRect.height + 12}px`,
             boxShadow: '0 0 0 9999px rgba(15, 23, 42, 0.65)',
             pointerEvents: 'none',
@@ -211,9 +219,9 @@ export function TourCoachmark() {
         style={isMobile ? undefined : desktopStyle}
         className={
           isMobile
-            ? 'fixed bottom-4 inset-x-3 z-[9999] rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xl animate-slideUp'
+            ? 'fixed bottom-3 inset-x-3 z-[9999] max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xl animate-slideUp'
             : !targetRect
-            ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[400px] rounded-2xl border border-slate-200/90 bg-white p-6 shadow-2xl'
+            ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[400px] max-w-[calc(100vw-24px)] rounded-2xl border border-slate-200/90 bg-white p-6 shadow-2xl'
             : 'rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xl transition-all duration-200'
         }
       >
@@ -231,14 +239,14 @@ export function TourCoachmark() {
           <div className="flex items-center gap-2">
             <button
               onClick={skipTour}
-              className="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition-colors"
+              className="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
             >
               Skip
             </button>
             <button
               onClick={skipTour}
               aria-label="Close tour"
-              className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors"
+              className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
@@ -280,11 +288,11 @@ export function TourCoachmark() {
         </div>
 
         {/* Navigation Action Buttons */}
-        <div className="mt-5 flex items-center justify-between gap-2 pt-3 border-t border-slate-100">
+        <div className="mt-4 sm:mt-5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
           <button
             onClick={prevStep}
             disabled={currentStepIndex === 0}
-            className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
             <span>Back</span>
@@ -292,8 +300,9 @@ export function TourCoachmark() {
 
           {currentStepIndex < totalSteps - 1 ? (
             <button
+              id="coachmark-primary-btn"
               onClick={nextStep}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
             >
               <span>Next</span>
               <ChevronRight className="h-3.5 w-3.5 text-teal-400" />
@@ -305,14 +314,18 @@ export function TourCoachmark() {
                   skipTour();
                   setActiveTab('methodology');
                 }}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 <BookOpen className="h-3 w-3 text-slate-500" />
                 <span>Methodology</span>
               </button>
               <button
-                onClick={nextStep}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-teal-700 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500"
+                id="coachmark-primary-btn"
+                onClick={() => {
+                  nextStep();
+                  setActiveTab('explorer');
+                }}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-3.5 sm:px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-teal-700 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
               >
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 <span>Start Exploring</span>

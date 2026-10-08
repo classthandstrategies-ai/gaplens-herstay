@@ -8,12 +8,12 @@ export const TOUR_STEPS: TourStep[] = [
     title: 'Choose Market & Radius',
     subtitle: 'Targeting tech corridor employment anchors',
     description:
-      'Select a high-density employment hub (such as Whitefield, Hitec City, or Hinjawadi). Adjust the straight-line radius slider (1.0 to 5.0 km) to establish your target search zone around the anchor.',
+      'Select a high-density employment hub (such as Manyata Tech Park, Hinjewadi, or Gachibowli). Adjust the straight-line radius slider (1.0 to 5.0 km) to establish your target search zone around the anchor.',
     targetSelector: '[data-tour="market-filters"]',
     targetTab: 'explorer',
     position: 'right',
     keyInsight:
-      'Distances are Euclidean straight-line estimates from the anchor point, capturing immediate walking and auto-rickshaw commute corridors.',
+      'Distances are calculated as Haversine straight-line distances from the employment anchor coordinates, without assuming road routing or travel times.',
     actionHint: 'Customize city, employment hub, and search radius anytime.',
   },
   {
@@ -38,12 +38,12 @@ export const TOUR_STEPS: TourStep[] = [
     title: 'Explore Discovered Supply',
     subtitle: 'Interactive map and accommodation listings',
     description:
-      'Inspect the spatial distribution of accommodations relative to the tech park. Click any map marker or property card to view discovered distance, pricing tier, public ratings, and listed amenities.',
+      'Inspect the spatial distribution of accommodations relative to the tech park. Click any map marker or property card to view discovered distance and public ratings, along with pricing tiers and amenities when available in public listings.',
     targetSelector: '[data-tour="property-map-area"]',
     targetTab: 'explorer',
     position: 'left',
     keyInsight:
-      'Public Google Maps listings are treated as discovered search results, not independently certified or verified operating facilities.',
+      'Public Google Maps listings are treated as discovered search results, not independently certified operating facilities. Pricing tiers and amenities are displayed only when available from public search data.',
     actionHint: 'Use the sort dropdown to rank by distance, friction, or rating.',
   },
   {

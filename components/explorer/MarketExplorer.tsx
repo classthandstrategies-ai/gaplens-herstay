@@ -176,7 +176,7 @@ export function MarketExplorer({
                   <span className="font-semibold text-slate-700">Analysis Radius</span>
                   <ContextualHelp
                     title="Straight-Line Radius Baseline"
-                    content="Calculates Euclidean distance from the employment anchor coordinate. Actual travel times vary based on walking paths, metro connectivity, and peak traffic."
+                    content="Calculates Haversine straight-line distance from the employment anchor coordinate. Actual travel times vary based on road networks, transit connectivity, and traffic conditions."
                   />
                 </div>
                 <span className="font-mono font-bold text-teal-700">
