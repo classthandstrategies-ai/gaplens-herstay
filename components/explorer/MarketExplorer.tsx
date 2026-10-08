@@ -342,10 +342,14 @@ export function MarketExplorer({
               <span
                 className={`inline-block rounded-md border px-2.5 py-0.5 font-mono text-xs font-bold uppercase tracking-wider ${confidenceBadgeColor}`}
               >
-                {initialReport.metrics.evidenceConfidence}
+                {initialReport.dataSource === 'illustrative_sample'
+                  ? 'DEMO SAMPLE'
+                  : initialReport.metrics.evidenceConfidence}
               </span>
               <span className="text-[11px] text-stone-500 truncate max-w-[130px]">
-                {initialReport.dataSource.replace('_', ' ')}
+                {initialReport.dataSource === 'illustrative_sample'
+                  ? 'illustrative sample'
+                  : initialReport.dataSource.replace('_', ' ')}
               </span>
             </div>
           </div>

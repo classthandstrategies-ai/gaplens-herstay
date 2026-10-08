@@ -48,12 +48,11 @@ export function PropertyCard({
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5 text-[11px] text-[#6B7280]">
-            <span className="font-semibold text-[#374151]">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-stone-500">
+            <span className="font-semibold text-stone-700">
               {listing.category || "Women's Stay"}
             </span>
-            <span>•</span>
-            <span className="font-mono font-bold text-[#0C4A44]">
+            <span className="font-mono font-bold text-teal-800">
               {formatStraightLineDistance(listing.distanceKm)}
             </span>
           </div>
@@ -74,8 +73,8 @@ export function PropertyCard({
 
       {/* Pricing if available */}
       {listing.price && (
-        <div className="mt-1.5 text-[11px] font-semibold text-[#1F2937]">
-          Public Rent: <span className="font-mono text-[#0C4A44]">{listing.price}</span>
+        <div className="mt-1.5 text-[11px] font-semibold text-stone-800 break-words">
+          Public Rent: <span className="font-mono text-teal-800 font-bold">{listing.price}</span>
         </div>
       )}
 

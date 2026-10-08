@@ -11,7 +11,7 @@ export const TOUR_STEPS: TourStep[] = [
       'Select a high-density employment hub (such as Manyata Tech Park, Hinjewadi, or Gachibowli). Adjust the straight-line radius slider (1.0 to 5.0 km) to establish your target search zone around the anchor.',
     targetSelector: '[data-tour="market-filters"]',
     targetTab: 'explorer',
-    position: 'right',
+    position: 'bottom',
     keyInsight:
       'Distances are calculated as Haversine straight-line distances from the employment anchor coordinates, without assuming road routing or travel times.',
     actionHint: 'Customize city, employment hub, and search radius anytime.',
@@ -23,7 +23,7 @@ export const TOUR_STEPS: TourStep[] = [
     title: 'Scan Discovered Supply',
     subtitle: 'Live SerpApi search vs calibrated sample',
     description:
-      'Clicking "Analyze Accommodation Supply" queries Google Maps and Places via SerpApi to discover public women’s PGs, hostels, and co-living facilities. During this tour, no live API credits are consumed.',
+      'Clicking "Scan Supply" queries Google Maps and Places via SerpApi to discover public women’s PGs, hostels, and co-living facilities. During this tour, no live API credits are consumed.',
     targetSelector: '[data-tour="analyze-btn"]',
     targetTab: 'explorer',
     position: 'bottom',
@@ -41,7 +41,7 @@ export const TOUR_STEPS: TourStep[] = [
       'Inspect the spatial distribution of accommodations relative to the tech park. Click any map marker or property card to view discovered distance and public ratings, along with pricing tiers and amenities when available in public listings.',
     targetSelector: '[data-tour="property-map-area"]',
     targetTab: 'explorer',
-    position: 'left',
+    position: 'bottom',
     keyInsight:
       'Public Google Maps listings are treated as discovered search results, not independently certified operating facilities. Pricing tiers and amenities are displayed only when available from public search data.',
     actionHint: 'Use the sort dropdown to rank by distance, friction, or rating.',

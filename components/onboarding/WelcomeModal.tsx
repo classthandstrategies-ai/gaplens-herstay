@@ -60,7 +60,7 @@ export function WelcomeModal() {
 
         {/* Body Text */}
         <p className="mt-3 text-xs sm:text-sm text-stone-600 leading-relaxed font-sans">
-          Analyze public accommodation supply density, evaluate recurring reviewer complaints, and identify high-conviction micro-market opportunities around India&apos;s leading tech corridors.
+          Analyze public accommodation supply density, evaluate recurring reviewer complaints, and identify underserved accommodation gaps and operator hypotheses around India&apos;s leading employment corridors.
         </p>
 
         {/* Feature Highlights Grid */}

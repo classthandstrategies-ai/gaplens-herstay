@@ -18,7 +18,6 @@ const MANYATA_SAMPLE_LISTINGS: Omit<PlaceListing, 'distanceKm'>[] = [
     coordinates: { lat: 13.0489, lng: 77.6205 }, // ~0.2 km from hub
     category: "Women's PG & Hostel",
     price: '₹9,500 - ₹14,000 / mo',
-    phone: '+91 98450 12345',
     link: 'https://maps.google.com/?cid=1111111111111111',
     reviewsSample: [
       {
@@ -55,7 +54,6 @@ const MANYATA_SAMPLE_LISTINGS: Omit<PlaceListing, 'distanceKm'>[] = [
     coordinates: { lat: 13.0435, lng: 77.6272 }, // ~0.7 km
     category: "Women's Hostel",
     price: '₹8,500 - ₹12,500 / mo',
-    phone: '+91 97401 56789',
     link: 'https://maps.google.com/?cid=2222222222222222',
     reviewsSample: [
       {
@@ -92,7 +90,6 @@ const MANYATA_SAMPLE_LISTINGS: Omit<PlaceListing, 'distanceKm'>[] = [
     coordinates: { lat: 13.0398, lng: 77.6189 }, // ~0.9 km
     category: "Managed Co-living",
     price: '₹12,000 - ₹18,000 / mo',
-    phone: '+91 80 4567 8900',
     link: 'https://maps.google.com/?cid=3333333333333333',
     reviewsSample: [
       {
@@ -122,7 +119,6 @@ const MANYATA_SAMPLE_LISTINGS: Omit<PlaceListing, 'distanceKm'>[] = [
     coordinates: { lat: 13.0452, lng: 77.6115 }, // ~1.2 km
     category: "Ladies PG",
     price: '₹7,500 - ₹11,000 / mo',
-    phone: '+91 99002 34567',
     link: 'https://maps.google.com/?cid=4444444444444444',
     reviewsSample: [
       {
@@ -152,7 +148,6 @@ const MANYATA_SAMPLE_LISTINGS: Omit<PlaceListing, 'distanceKm'>[] = [
     coordinates: { lat: 13.0535, lng: 77.6012 }, // ~2.3 km
     category: "Serviced Living",
     price: '₹13,500 - ₹21,000 / mo',
-    phone: '+91 80 2345 6789',
     link: 'https://maps.google.com/?cid=5555555555555555',
     reviewsSample: [
       {
@@ -182,7 +177,6 @@ const MANYATA_SAMPLE_LISTINGS: Omit<PlaceListing, 'distanceKm'>[] = [
     coordinates: { lat: 13.0578, lng: 77.6075 }, // ~1.9 km
     category: "Working Women Hostel",
     price: '₹8,000 - ₹11,500 / mo',
-    phone: '+91 94481 12233',
     link: 'https://maps.google.com/?cid=6666666666666666',
     reviewsSample: [
       {
@@ -212,7 +206,6 @@ const MANYATA_SAMPLE_LISTINGS: Omit<PlaceListing, 'distanceKm'>[] = [
     coordinates: { lat: 13.0612, lng: 77.6295 }, // ~1.7 km
     category: "Ladies PG",
     price: '₹8,500 - ₹13,000 / mo',
-    phone: '+91 98801 88990',
     link: 'https://maps.google.com/?cid=7777777777777777',
     reviewsSample: [
       {
@@ -242,7 +235,6 @@ const MANYATA_SAMPLE_LISTINGS: Omit<PlaceListing, 'distanceKm'>[] = [
     coordinates: { lat: 13.0315, lng: 77.6345 }, // ~2.2 km
     category: "Executive PG",
     price: '₹10,500 - ₹16,000 / mo',
-    phone: '+91 97412 33445',
     link: 'https://maps.google.com/?cid=8888888888888888',
     reviewsSample: [
       {

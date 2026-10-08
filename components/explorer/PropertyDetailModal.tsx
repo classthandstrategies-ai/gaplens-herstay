@@ -42,12 +42,12 @@ export function PropertyDetailModal({
         {/* Sticky modal header */}
         <div className="sticky top-0 z-10 flex items-start justify-between border-b border-stone-200 bg-white/95 px-6 py-4.5 backdrop-blur-xs">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-md bg-stone-100 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-700 border border-stone-200">
                 {listing.category || "Women's Accommodation"}
               </span>
               <span className="font-mono text-xs text-teal-800 font-medium">
-                {formatStraightLineDistance(listing.distanceKm)} straight-line to {hub.name}
+                {formatStraightLineDistance(listing.distanceKm)} to {hub.name}
               </span>
             </div>
             <h2
@@ -68,10 +68,10 @@ export function PropertyDetailModal({
         </div>
 
         {/* Modal content body */}
-        <div className="px-6 py-5 space-y-6">
+        <div className="px-5 sm:px-6 py-5 space-y-6 pb-8">
           {/* Key metrics grid (Amplitude style tabular stats) */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3.5">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+            <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3 sm:p-3.5">
               <span className="font-mono text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">
                 Public Rating
               </span>
@@ -90,7 +90,7 @@ export function PropertyDetailModal({
               )}
             </div>
 
-            <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3.5">
+            <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3 sm:p-3.5">
               <span className="font-mono text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">
                 Review Volume
               </span>
@@ -102,21 +102,21 @@ export function PropertyDetailModal({
               </div>
             </div>
 
-            <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3.5">
+            <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3 sm:p-3.5">
               <span className="font-mono text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">
                 Proximity
               </span>
               <div className="mt-1 font-mono text-sm font-bold text-teal-800">
-                {formatStraightLineDistance(listing.distanceKm)}
+                {listing.distanceKm < 1 ? `${Math.round(listing.distanceKm * 1000)} m` : `${listing.distanceKm.toFixed(1)} km`}
               </div>
-              <span className="text-[10px] text-stone-400">straight-line</span>
+              <span className="text-[10px] text-stone-400">straight-line to hub</span>
             </div>
 
-            <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3.5">
+            <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3 sm:p-3.5">
               <span className="font-mono text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">
                 Public Price Tier
               </span>
-              <div className="mt-1 text-xs font-semibold text-stone-800 truncate">
+              <div className="mt-1 text-[11px] sm:text-xs font-semibold text-stone-800 break-words leading-tight">
                 {listing.price || 'Market Standard'}
               </div>
               <span className="text-[10px] text-stone-400">when available</span>
@@ -137,6 +137,7 @@ export function PropertyDetailModal({
                     <div className="mt-2 flex items-center gap-1.5 text-xs font-mono text-stone-700">
                       <Phone className="h-3.5 w-3.5 text-stone-400" />
                       <span>{listing.phone}</span>
+                      <span className="text-[10px] text-stone-400 font-sans">(Google Maps public listing)</span>
                     </div>
                   )}
                 </div>

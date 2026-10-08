@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { PlaceListing, EmploymentHub } from '@/lib/types';
 import { formatStraightLineDistance } from '@/lib/geo/distance';
+import { Info, ChevronUp, ChevronDown } from 'lucide-react';
 
 interface PropertyMapProps {
   hub: EmploymentHub;
@@ -121,6 +122,8 @@ export default function PropertyMap({
     () => [hub.coordinates.lat, hub.coordinates.lng],
     [hub.coordinates.lat, hub.coordinates.lng]
   );
+
+  const [isLegendExpanded, setIsLegendExpanded] = useState(false);
 
   const selectedCoord: [number, number] | undefined = useMemo(() => {
     if (!selectedProperty) return undefined;
@@ -241,27 +244,58 @@ export default function PropertyMap({
         })}
       </MapContainer>
 
-      {/* Map Legend overlay (Architectural floating card) */}
-      <div className="absolute bottom-3 left-3 z-[1000] rounded-xl bg-white/95 p-3 shadow-md backdrop-blur-xs border border-stone-200 text-xs">
-        <div className="font-mono text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">
-          Spatial Map Legend
-        </div>
-        <div className="flex flex-col gap-1.5 text-[11px] text-stone-700">
-          <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-stone-900 ring-2 ring-teal-400" />
-            <span className="font-medium">{hub.name} (Anchor)</span>
+      {/* Map Legend overlay (Architectural floating card with mobile collapse) */}
+      <div className="absolute bottom-6 left-2 sm:bottom-3 sm:left-3 z-[1000] max-w-[270px] rounded-xl bg-white/95 shadow-md backdrop-blur-xs border border-stone-200 text-xs transition-all">
+        {/* Header toggle on mobile */}
+        <button
+          type="button"
+          onClick={() => setIsLegendExpanded(!isLegendExpanded)}
+          className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left sm:cursor-default"
+          aria-expanded={isLegendExpanded}
+          aria-label="Toggle map rating legend"
+        >
+          <div className="flex items-center gap-1.5">
+            <Info className="h-3.5 w-3.5 text-stone-500" />
+            <span className="font-mono text-[10px] font-bold text-stone-600 uppercase tracking-wider">
+              Google Maps Rating Bands
+            </span>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-teal-700" />
-            <span>3.8+ Rating (Lower Friction)</span>
+          <span className="sm:hidden text-stone-400">
+            {isLegendExpanded ? (
+              <ChevronDown className="h-3.5 w-3.5" />
+            ) : (
+              <ChevronUp className="h-3.5 w-3.5" />
+            )}
+          </span>
+        </button>
+
+        {/* Legend content: shown always on desktop (sm:block), toggleable on mobile */}
+        <div className={`px-3 pb-3 pt-0.5 space-y-2 border-t border-stone-100 sm:border-0 ${isLegendExpanded ? 'block' : 'hidden sm:block'}`}>
+          <div className="flex flex-col gap-1.5 text-[11px] text-stone-700">
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-stone-900 ring-2 ring-teal-400 shrink-0" />
+              <span className="font-medium truncate">{hub.name} (Anchor Hub)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-teal-700 shrink-0" />
+              <span>★ 3.8+ Public Rating</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-amber-600 shrink-0" />
+              <span>★ 3.4 – 3.7 Public Rating</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-rose-700 shrink-0" />
+              <span>★ &lt; 3.4 Public Rating</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="h-2.5 w-2.5 rounded-full bg-stone-500 shrink-0" />
+              <span>Unrated on Google Maps</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-amber-600" />
-            <span>3.4 – 3.7 (Moderate Friction)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-rose-700" />
-            <span>&lt; 3.4 (Elevated Complaints)</span>
+
+          <div className="pt-1.5 border-t border-stone-100 text-[10px] text-stone-500 leading-tight">
+            *Review complaints (hygiene, maintenance, security) are analyzed separately from star ratings and displayed in property cards and telemetry below.
           </div>
         </div>
       </div>

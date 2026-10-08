@@ -100,17 +100,39 @@ export function OpportunityReportView({
           <div>
             Data Engine:{' '}
             <span className="font-semibold text-stone-700">
-              SerpApi Google Maps & Reviews
+              {report.dataSource === 'illustrative_sample'
+                ? 'Illustrative Demonstration Baseline (Demo Mode)'
+                : report.dataSource === 'cached_serpapi'
+                ? 'SerpApi Google Maps & Reviews (Cached)'
+                : 'SerpApi Google Maps & Reviews (Live)'}
             </span>
           </div>
           <div>
             Evidence Grade:{' '}
             <span className={`px-1.5 py-0.2 rounded font-bold uppercase ${confidenceBadgeColor}`}>
-              {metrics.evidenceConfidence}
+              {report.dataSource === 'illustrative_sample' ? 'DEMO SAMPLE' : metrics.evidenceConfidence}
             </span>
           </div>
         </div>
       </header>
+
+      {/* Illustrative Demonstration Data Notice */}
+      {report.dataSource === 'illustrative_sample' && (
+        <section
+          aria-label="Illustrative demonstration data notice"
+          className="rounded-2xl border border-amber-300 bg-amber-50/90 p-4.5 text-xs text-amber-950 shadow-2xs flex items-start gap-3"
+        >
+          <Info className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <span className="font-bold uppercase tracking-wider text-[11px] text-amber-900 block">
+              Illustrative Demonstration Data Notice
+            </span>
+            <p className="text-amber-800 leading-relaxed font-sans">
+              This dossier is currently populated with <strong>calibrated demonstration sample data</strong> to illustrate platform analytics without consuming SerpApi search credits. The metrics, spatial pockets, review citations, and strategic hypotheses below are <strong>illustrative demonstration findings</strong> for evaluation, not empirically retrieved or verified live SerpApi data. To generate an empirical dossier, trigger a live scan from the Market Explorer.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Partial Coverage Notice if applicable */}
       {report.searchCoverage === 'partial' && (
@@ -152,14 +174,20 @@ export function OpportunityReportView({
 
         {/* 2-Pillar Matrix: Observed Telemetry vs Directional Hypotheses */}
         <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-stone-200">
-          {/* Pillar 1: Empirically Observed Search Telemetry */}
+          {/* Pillar 1: Observed Search Telemetry / Demonstration Observations */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-stone-900 font-serif font-bold text-base">
               <Building2 className="h-4 w-4 text-teal-700" />
-              <span>Empirically Observed Telemetry</span>
+              <span>
+                {report.dataSource === 'illustrative_sample'
+                  ? 'Demonstration Sample Observations'
+                  : 'Observed Search Telemetry'}
+              </span>
             </div>
             <p className="text-xs text-stone-500">
-              Directly grounded in retrieved SerpApi listings and public review text.
+              {report.dataSource === 'illustrative_sample'
+                ? 'Observed signals from calibrated demonstration sample listings (Demo Mode).'
+                : 'Directly grounded in retrieved SerpApi listings and public review text.'}
             </p>
             <ul className="space-y-2 text-xs text-stone-700 pt-1">
               {opportunityHypothesis.actionableInsights.map((insight, idx) => (
@@ -178,7 +206,7 @@ export function OpportunityReportView({
               <span>Directional Operator Hypotheses</span>
             </div>
             <p className="text-xs text-stone-500">
-              Commercial recommendations requiring on-the-ground field verification.
+              Strategic commercial recommendations and operating hypotheses requiring on-the-ground field verification.
             </p>
             <ul className="space-y-2 text-xs text-stone-700 pt-1">
               {opportunityHypothesis.recommendedFocusAreas.map((area, idx) => (
@@ -200,7 +228,9 @@ export function OpportunityReportView({
               Spatial Supply Pockets & Distance Gradients
             </h3>
             <p className="text-xs text-stone-500 mt-1">
-              Concentration of discovered accommodations mapped against Haversine straight-line distance bands
+              {report.dataSource === 'illustrative_sample'
+                ? 'Illustrative supply concentration mapped against Haversine straight-line distance bands (Demo Baseline)'
+                : 'Concentration of discovered accommodations mapped against Haversine straight-line distance bands'}
             </p>
           </div>
         </div>
@@ -239,11 +269,13 @@ export function OpportunityReportView({
               Public Review Dissatisfaction Matrix
             </h3>
             <span className="font-mono text-[11px] text-stone-500">
-              {metrics.totalReviewsAnalyzed} reviews evaluated
+              {metrics.totalReviewsAnalyzed} reviews {report.dataSource === 'illustrative_sample' ? 'evaluated (Sample)' : 'evaluated'}
             </span>
           </div>
           <p className="text-xs text-stone-500 mt-0.5">
-            Recurrence and severity of tenant pain points in public Google Maps reviews
+            {report.dataSource === 'illustrative_sample'
+              ? 'Illustrative recurrence and severity of pain points in demonstration reviews'
+              : 'Recurrence and severity of tenant pain points in public Google Maps reviews'}
           </p>
 
           <div className="mt-4 divide-y divide-stone-100">

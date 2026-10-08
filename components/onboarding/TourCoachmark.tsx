@@ -93,10 +93,21 @@ export function TourCoachmark() {
   useEffect(() => {
     if (!isOpen) return;
 
-    // Smooth scroll target element into viewport
+    // Smooth scroll target element into viewport with smart offset
     const el = document.querySelector(currentStep.targetSelector);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (isMobile) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.scrollBy({ top: -70, behavior: 'smooth' });
+      } else if (currentStep.position === 'bottom') {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        window.scrollBy({ top: -85, behavior: 'smooth' });
+      } else if (currentStep.position === 'top') {
+        el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        window.scrollBy({ top: 85, behavior: 'smooth' });
+      } else {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
     }
 
     const timer = setTimeout(updateRect, 150);
@@ -108,7 +119,7 @@ export function TourCoachmark() {
       window.removeEventListener('resize', updateRect);
       window.removeEventListener('scroll', updateRect);
     };
-  }, [isOpen, currentStepIndex, currentStep, updateRect]);
+  }, [isOpen, currentStepIndex, currentStep, isMobile, updateRect]);
 
   if (!isOpen || !currentStep) return null;
 
@@ -119,6 +130,7 @@ export function TourCoachmark() {
     const padding = 16;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
+    const CARD_HEIGHT = 440;
 
     const elViewportTop = targetRect.top - window.scrollY;
     const elViewportBottom = targetRect.bottom - window.scrollY;
@@ -139,8 +151,11 @@ export function TourCoachmark() {
     } else if (currentStep.position === 'bottom') {
       computedLeft = Math.max(padding, Math.min(viewportWidth - cardWidth - padding, elViewportLeft));
       computedTop = elViewportBottom + padding;
-      if (computedTop + 340 > viewportHeight - padding) {
-        computedTop = Math.max(80, elViewportTop - 340 - padding);
+      if (computedTop + CARD_HEIGHT > viewportHeight - padding) {
+        // Check if there's room above
+        if (elViewportTop - CARD_HEIGHT - padding >= 76) {
+          computedTop = elViewportTop - CARD_HEIGHT - padding;
+        }
       }
     } else if (currentStep.position === 'left') {
       computedLeft = elViewportLeft - cardWidth - padding;
@@ -151,12 +166,13 @@ export function TourCoachmark() {
       }
     } else if (currentStep.position === 'top') {
       computedLeft = Math.max(padding, Math.min(viewportWidth - cardWidth - padding, elViewportLeft));
-      computedTop = Math.max(80, elViewportTop - 340 - padding);
+      computedTop = Math.max(76, elViewportTop - CARD_HEIGHT - padding);
     }
 
-    // Keep within viewport bounds
+    // Keep strictly within viewport bounds so navigation is never clipped
     computedLeft = Math.max(padding, Math.min(viewportWidth - cardWidth - padding, computedLeft));
-    computedTop = Math.max(76, Math.min(viewportHeight - 380, computedTop));
+    const maxTop = Math.max(76, viewportHeight - CARD_HEIGHT - 16);
+    computedTop = Math.max(76, Math.min(maxTop, computedTop));
 
     desktopStyle = {
       position: 'fixed',
@@ -202,10 +218,10 @@ export function TourCoachmark() {
         style={isMobile ? undefined : desktopStyle}
         className={
           isMobile
-            ? 'fixed bottom-3 inset-x-3 z-[9999] max-h-[85vh] overflow-y-auto rounded-3xl border border-stone-200/90 bg-white p-4.5 sm:p-6 shadow-2xl animate-slideUp'
+            ? 'fixed bottom-3 inset-x-3 z-[9999] max-h-[55vh] overflow-y-auto rounded-3xl border border-stone-200/90 bg-white p-4.5 sm:p-6 shadow-2xl animate-slideUp'
             : !targetRect
             ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[400px] max-w-[calc(100vw-24px)] rounded-3xl border border-stone-200/90 bg-white p-6 shadow-2xl'
-            : 'rounded-3xl border border-stone-200/90 bg-white p-5.5 shadow-2xl transition-all duration-200'
+            : 'rounded-3xl border border-stone-200/90 bg-white p-5.5 shadow-2xl transition-all duration-200 max-h-[calc(100vh-100px)] overflow-y-auto'
         }
       >
         {/* Progress Bar Header */}
