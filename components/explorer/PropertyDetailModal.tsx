@@ -117,7 +117,7 @@ export function PropertyDetailModal({
                 Public Price Tier
               </span>
               <div className="mt-1 text-[11px] sm:text-xs font-semibold text-stone-800 break-words leading-tight">
-                {listing.price || 'Market Standard'}
+                {listing.price || 'Not publicly listed'}
               </div>
               <span className="text-[10px] text-stone-400">when available</span>
             </div>
