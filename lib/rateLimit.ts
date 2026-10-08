@@ -4,7 +4,7 @@
  */
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute sliding window
-const MAX_REQUESTS_PER_WINDOW = 15; // Max 15 requests/min per IP
+const MAX_REQUESTS_PER_WINDOW = 6; // Conservative limit: max 6 analysis requests/min per IP
 
 const requestHistory = new Map<string, number[]>();
 

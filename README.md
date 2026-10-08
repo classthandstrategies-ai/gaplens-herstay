@@ -19,14 +19,14 @@ Meanwhile, PG entrepreneurs and hostel operators lack empirical, location-specif
 
 The gap is rarely just a shortage of beds. It is often:
 - **Last-Mile Transit Friction**: Accommodations clustered beyond comfortable walking distance from office gates.
-- **Persistent Hygiene Deficits**: Cockroaches, uncleaned washrooms, and ignored pest complaints.
-- **Deposit Refund Friction**: Arbitrary deposit deductions and lack of transparent contracts.
-- **Curfew & Personal Privacy Infringements**: Unscheduled caretaker intrusions and disproportionate restrictions.
-- **Substandard Maintenance & Utilities**: Chronic Wi-Fi drops, geyser failures, and erratic water supply.
+- **Hygiene Deficits Noted in Public Feedback**: Unclean washrooms, persistent pests, and ignored cleanliness complaints.
+- **Deposit Refund Friction**: Arbitrary deposit deductions and lack of transparent contracts noted by reviewers.
+- **Curfew & Personal Privacy Concerns**: Inflexible gate restrictions or intrusions reported by past occupants.
+- **Maintenance & Utilities Downtime**: Chronic Wi-Fi drops, geyser failures, and erratic water supply.
 
-**GapLens HerStay Intelligence** bridges this divide by turning public Google Maps and Google Maps Reviews data via **SerpApi** into actionable market opportunity reports.
+**GapLens HerStay Intelligence** examines these potential gaps by turning public Google Maps and Google Maps Reviews data via **SerpApi** into structured market opportunity reports.
 
-> **Important Boundary:** Online reviews represent subjective personal accounts. GapLens never presents online reviews as verified allegations or formal municipal/police safety audits.
+> **Important Boundary & Data Integrity:** Google Maps businesses represent **discovered public search listings**, not independently audited or verified operating properties. Google reviews represent **subjective public reviewer feedback**, not confirmed resident testimony or formal allegations. GapLens never presents online review feedback as verified factual allegations or formal municipal/police safety audits.
 
 ---
 
@@ -35,9 +35,9 @@ The gap is rarely just a shortage of beds. It is often:
 Existing platforms (e.g. MagicBricks, Housing.com, 99acres) are designed for **tenant consumer discovery**, not **market opportunity discovery**:
 1. **Sponsored Bias**: They highlight sponsored or paying properties rather than exposing quality deficits.
 2. **No Friction Aggregation**: They don't cluster textual reviews into recurring complaint categories (e.g. hygiene vs. deposits vs. transit).
-3. **No Spatial Opportunity Synthesis**: They cannot compute relative supply density against major corporate employment gates to tell an investor where a new facility is most needed.
+3. **No Spatial Opportunity Synthesis**: They cannot compute relative supply density against major corporate employment gates to tell an operator where better options are needed.
 
-GapLens aggregates discoverable public search listings and review evidence to quantify where quality and management gaps exist.
+GapLens aggregates discoverable public search listings and review evidence to quantify where potential quality and management gaps exist.
 
 ---
 
@@ -70,7 +70,7 @@ GapLens uses SerpApi as its core data foundation:
             ▼
 ┌────────────────────────┐
 │ SerpApi Maps Reviews   │ Engine: `google_maps_reviews`
-│    Sampling Engine     │ Extracting authentic tenant review text & dates
+│    Sampling Engine     │ Sampling public reviewer feedback text & dates
 └───────────┬────────────┘
             │
             ▼
@@ -88,10 +88,10 @@ GapLens uses SerpApi as its core data foundation:
 
 ### SerpApi Endpoints Used:
 1. **Google Maps API** (`engine: 'google_maps'`):
-   - Retrieves verified coordinates, title, address, rating, review count, phone, and place identifiers.
+   - Retrieves public search listings, coordinates, title, address, rating, review count, and place identifiers.
    - Queries are centered on the employment anchor coordinate using `ll` parameter (e.g. `@13.0475,77.6220,14z`).
 2. **Google Maps Reviews API** (`engine: 'google_maps_reviews'`):
-   - Retrieves authentic user review snippets for detected properties using `data_id`.
+   - Retrieves public reviewer feedback snippets for discovered listings using `data_id`.
    - Analyzed for recurring friction themes.
 
 ### API Engineering & Reliability:
@@ -114,10 +114,10 @@ GapLens uses SerpApi as its core data foundation:
   - Visual radius perimeter circle.
   - Property popups with straight-line distance, ratings, and friction tags.
 - **Evidence Inspector Modal**:
-  - Verbatim resident quotes with author attribution and review dates.
+  - Verbatim public review quotes with author attribution and review dates.
   - Direct links to Google Maps source listings.
-- **Resident Friction Breakdown**:
-  - Interactive distribution of complaints across 9 categories.
+- **Reviewer Feedback & Friction Breakdown**:
+  - Interactive distribution of feedback across 9 categories.
   - Representative quotation drawer with unverified reviewer feedback disclaimers.
 - **Executive Opportunity Report**:
   - Export/print-friendly dossier with spatial pocket observations and competitor matrices.
@@ -196,9 +196,9 @@ Test coverage includes:
 
 ## 8. Methodology Scope & Limitations
 
-1. **Discoverable Sample**: Public Google Maps listings represent discoverable businesses; they do not represent an exhaustive registry of all unregistered PG facilities.
-2. **Subjective Feedback**: Tenant reviews reflect subjective experiences and do not verify physical occupancy, financial viability, or legal status.
-3. **No Defamatory Claims**: Safety-related comments are categorized as unverified personal opinions, never as formal police or municipal safety findings.
+1. **Discovered Public Listings**: Google Maps businesses represent discovered public search listings; they are not independently verified or audited operating properties, nor do they represent an exhaustive census of unregistered accommodation facilities.
+2. **Subjective Public Feedback**: Google Maps reviews represent subjective public reviewer feedback, not confirmed resident testimony, physical occupancy data, financial health audits, or legal compliance checks.
+3. **No Defamatory or Formal Safety Findings**: Safety-related comments are categorized as unverified personal opinions of online reviewers, never as formal police or municipal safety findings.
 4. **Straight-Line Distance**: All distances are spherical straight-line distances from anchor gates, clearly distinguished from driving or transit commute times.
 
 ---

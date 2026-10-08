@@ -30,7 +30,7 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalysisRespo
         {
           success: false,
           error: 'Rate limit exceeded. Please wait before requesting additional market analyses.',
-          details: 'Maximum 15 analysis scans allowed per minute per IP address.',
+          details: 'Maximum 6 analysis scans allowed per minute per IP address.',
           code: 'RATE_LIMITED',
         },
         {
@@ -59,25 +59,24 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalysisRespo
 
     const { hubId, radiusKm, forceRefresh } = parseResult.data;
 
-    // 2. Restrict forceRefresh access: Unrestricted public cache bypass is forbidden
+    // 2. Restrict forceRefresh access: Only allowed through independent ADMIN_REFRESH_SECRET
+    // Never accept SERPAPI_API_KEY as an admin credential and never log either secret
     if (forceRefresh) {
       const adminHeader = req.headers.get('x-admin-key');
       const authHeader = req.headers.get('authorization');
-      const adminSecret = process.env.ADMIN_REFRESH_SECRET;
-      const configuredApiKey = process.env.SERPAPI_API_KEY?.replace(/["']/g, '').trim();
+      const adminSecret = process.env.ADMIN_REFRESH_SECRET?.trim();
 
       const isAuthorized =
-        (adminSecret && adminHeader === adminSecret) ||
-        (configuredApiKey &&
-          (authHeader === `Bearer ${configuredApiKey}` || adminHeader === configuredApiKey));
+        Boolean(adminSecret) &&
+        (adminHeader === adminSecret || authHeader === `Bearer ${adminSecret}`);
 
       if (!isAuthorized) {
         return NextResponse.json(
           {
             success: false,
-            error: 'Unrestricted forceRefresh is disabled to prevent SerpApi credit exhaustion.',
+            error: 'Administrative authorization is required for forceRefresh.',
             details:
-              'Standard cached and live market intelligence is served automatically. Administrative authorization is required to force cache bypass.',
+              'Unrestricted cache bypass is disabled. Standard cached and live market intelligence is served automatically.',
             code: 'FORBIDDEN',
           },
           { status: 403 }
@@ -151,29 +150,29 @@ export async function POST(req: NextRequest): Promise<NextResponse<AnalysisRespo
         data: report,
         code: 'OK',
       });
-    } catch (apiErr: unknown) {
-      const message = apiErr instanceof Error ? apiErr.message : String(apiErr);
-      console.error('SerpApi live query failed:', message);
+    } catch {
+      console.error('SerpApi live query failed');
 
-      // Return explicit error state: NEVER silently fabricate or replace failed live searches with sample data
+      // Return explicit, sanitized error state: NEVER silently fabricate or replace failed live searches with sample data,
+      // and NEVER expose raw upstream response texts or sensitive query parameters.
       return NextResponse.json(
         {
           success: false,
-          error: `Live SerpApi search query failed: ${message}`,
+          error: 'The live market search provider encountered an error or connection timeout.',
           details:
-            'The live search pipeline encountered an error. Live requests are not silently substituted with fabricated data.',
+            'The live search request could not be completed. Live requests are not silently substituted with fabricated data.',
           code: 'NETWORK_ERROR',
         },
         { status: 502 }
       );
     }
-  } catch (err: unknown) {
-    console.error('API route exception:', err);
+  } catch {
+    console.error('API route exception');
     return NextResponse.json(
       {
         success: false,
-        error: 'Internal server error while analyzing accommodation market',
-        details: err instanceof Error ? err.message : String(err),
+        error: 'Internal server error while analyzing accommodation market.',
+        details: 'An unexpected processing error occurred. Please try again.',
         code: 'NETWORK_ERROR',
       },
       { status: 500 }

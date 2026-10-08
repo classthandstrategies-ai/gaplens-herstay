@@ -120,16 +120,14 @@ export async function searchGoogleMaps(
     });
 
     if (!res.ok) {
-      const errText = await res.text().catch(() => '');
-      throw new Error(`SerpApi HTTP request failed [${res.status}]: ${errText.slice(0, 200)}`);
+      throw new Error(`SerpApi search request failed with HTTP ${res.status}`);
     }
 
     const data = await res.json();
 
     // Check for JSON-level error payload returned by SerpApi
     if (data.error) {
-      const errorMsg = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
-      throw new Error(`SerpApi engine error: ${errorMsg}`);
+      throw new Error('SerpApi upstream engine reported an error');
     }
 
     const results = (data.local_results || []) as Array<Record<string, unknown>>;
@@ -255,7 +253,7 @@ export async function fetchPlaceReviews(
       if (snippet && snippet.trim().length > 10) {
         reviews.push({
           id: `rev-${dataIdOrPlaceId}-${i}`,
-          author: user?.name || 'Resident Reviewer',
+          author: user?.name || 'Google Reviewer',
           rating: typeof item.rating === 'number' ? item.rating : null,
           text: snippet,
           date: (item.date as string) || 'Recent',
@@ -280,6 +278,9 @@ export interface MarketSearchResult {
   partialCoverageNote?: string;
 }
 
+// In-flight request deduplication map to prevent concurrent expensive duplicate searches
+const inFlightSearches = new Map<string, Promise<MarketSearchResult>>();
+
 /**
  * Orchestrates a complete market investigation using SerpApi
  */
@@ -289,75 +290,90 @@ export async function executeMarketSearch(
   apiKey: string,
   forceRefresh: boolean = false
 ): Promise<MarketSearchResult> {
-  const allListings: PlaceListing[] = [];
-  let wasCached = true;
-  const errors: string[] = [];
-  let successfulQueries = 0;
+  const flightKey = `${hub.id}:${radiusKm.toFixed(1)}`;
 
-  // Run up to 2 targeted queries to stay within reasonable credit bounds
-  const queriesToRun = hub.primaryQueries.slice(0, 2);
-
-  for (const q of queriesToRun) {
-    const cacheKey = `maps:${q}:${hub.coordinates.lat.toFixed(4)},${hub.coordinates.lng.toFixed(4)}`;
-    if (forceRefresh || !getCached(cacheKey)) {
-      wasCached = false;
-    }
-    try {
-      const res = await searchGoogleMaps(q, hub, apiKey, forceRefresh);
-      allListings.push(...res);
-      successfulQueries++;
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      errors.push(msg);
-      console.warn(`Query failed for "${q}":`, msg);
-    }
+  if (!forceRefresh && inFlightSearches.has(flightKey)) {
+    return inFlightSearches.get(flightKey)!;
   }
 
-  // If every query failed, throw error to avoid falsely reporting zero results as a successful scan
-  if (successfulQueries === 0 && queriesToRun.length > 0) {
-    throw new Error(`All SerpApi search queries failed: ${errors.join('; ')}`);
-  }
+  const searchExecution = (async (): Promise<MarketSearchResult> => {
+    const allListings: PlaceListing[] = [];
+    let wasCached = true;
+    let successfulQueries = 0;
 
-  const searchCoverage: 'complete' | 'partial' =
-    successfulQueries < queriesToRun.length ? 'partial' : 'complete';
-  const partialCoverageNote =
-    searchCoverage === 'partial'
-      ? `Partial search coverage: ${successfulQueries} of ${queriesToRun.length} targeted search queries succeeded. One or more queries failed (${errors.join('; ')}). Discovered listings represent partial market coverage.`
-      : undefined;
+    // Run up to 2 targeted queries to stay within reasonable credit bounds
+    const queriesToRun = hub.primaryQueries.slice(0, 2);
 
-  // Deduplicate and filter by actual radius
-  const deduped = deduplicateListings(allListings);
-  const inRadius = deduped
-    .filter((l) => isWithinRadius(hub.coordinates, l.coordinates, radiusKm))
-    .sort((a, b) => a.distanceKm - b.distanceKm);
-
-  // For places missing reviews, fetch reviews for up to 8 places in the radius to enrich evidence
-  const enrichedListings: PlaceListing[] = [];
-  for (let i = 0; i < inRadius.length; i++) {
-    const listing = inRadius[i];
-    if (
-      (!listing.reviewsSample || listing.reviewsSample.length === 0) &&
-      listing.dataId &&
-      i < 8
-    ) {
+    for (const q of queriesToRun) {
+      const cacheKey = `maps:${q}:${hub.coordinates.lat.toFixed(4)},${hub.coordinates.lng.toFixed(4)}`;
+      if (forceRefresh || !getCached(cacheKey)) {
+        wasCached = false;
+      }
       try {
-        const fetched = await fetchPlaceReviews(listing.dataId, apiKey, forceRefresh);
-        enrichedListings.push({
-          ...listing,
-          reviewsSample: fetched,
-        });
+        const res = await searchGoogleMaps(q, hub, apiKey, forceRefresh);
+        allListings.push(...res);
+        successfulQueries++;
       } catch {
+        // Individual query failure handled to preserve partial coverage
+      }
+    }
+
+    // If every query failed, throw sanitized error to avoid falsely reporting zero results
+    if (successfulQueries === 0 && queriesToRun.length > 0) {
+      throw new Error('All SerpApi search queries failed to return valid accommodation results.');
+    }
+
+    const searchCoverage: 'complete' | 'partial' =
+      successfulQueries < queriesToRun.length ? 'partial' : 'complete';
+    const partialCoverageNote =
+      searchCoverage === 'partial'
+        ? `Partial search coverage: ${successfulQueries} of ${queriesToRun.length} targeted search queries completed successfully. Discovered listings reflect partial market coverage.`
+        : undefined;
+
+    // Deduplicate and filter by actual radius
+    const deduped = deduplicateListings(allListings);
+    const inRadius = deduped
+      .filter((l) => isWithinRadius(hub.coordinates, l.coordinates, radiusKm))
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+
+    // For places missing reviews, fetch reviews for up to 6 places in the radius to enrich evidence
+    const enrichedListings: PlaceListing[] = [];
+    for (let i = 0; i < inRadius.length; i++) {
+      const listing = inRadius[i];
+      if (
+        (!listing.reviewsSample || listing.reviewsSample.length === 0) &&
+        listing.dataId &&
+        i < 6
+      ) {
+        try {
+          const fetched = await fetchPlaceReviews(listing.dataId, apiKey, forceRefresh);
+          enrichedListings.push({
+            ...listing,
+            reviewsSample: fetched,
+          });
+        } catch {
+          enrichedListings.push(listing);
+        }
+      } else {
         enrichedListings.push(listing);
       }
-    } else {
-      enrichedListings.push(listing);
     }
+
+    return {
+      listings: enrichedListings,
+      isCached: wasCached,
+      searchCoverage,
+      partialCoverageNote,
+    };
+  })();
+
+  if (!forceRefresh) {
+    inFlightSearches.set(flightKey, searchExecution);
   }
 
-  return {
-    listings: enrichedListings,
-    isCached: wasCached,
-    searchCoverage,
-    partialCoverageNote,
-  };
+  try {
+    return await searchExecution;
+  } finally {
+    inFlightSearches.delete(flightKey);
+  }
 }

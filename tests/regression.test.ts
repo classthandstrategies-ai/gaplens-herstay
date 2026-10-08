@@ -343,13 +343,43 @@ describe('Regression: Data Integrity & Evidence Guardrails', () => {
     expect(report.limitations[0]).toContain('Partial search coverage');
   });
 
-  it('enforces rate limiting after maximum allowed requests in a window', () => {
-    const testIp = '198.51.100.42';
-    // Send 15 requests
-    for (let i = 0; i < 15; i++) {
+  it('enforces conservative rate limiting after 6 requests in a window', () => {
+    const testIp = '198.51.100.99';
+    // Send 6 allowed requests
+    for (let i = 0; i < 6; i++) {
       expect(checkRateLimit(testIp)).toBe(false);
     }
-    // 16th request must be rate-limited
+    // 7th request must be rate-limited
     expect(checkRateLimit(testIp)).toBe(true);
+  });
+
+  it('rejects SERPAPI_API_KEY as an administrative credential and requires ADMIN_REFRESH_SECRET', () => {
+    const fakeApiKey = 'serpapi_secret_key_12345';
+    const fakeAdminSecret = 'admin_secret_token_99999';
+
+    // Simulate route authorization logic
+    const isAuthorized = (
+      reqAdminKey: string | null,
+      authHeader: string | null,
+      configuredAdminSecret?: string
+    ) => {
+      const secret = configuredAdminSecret?.trim();
+      return (
+        Boolean(secret) &&
+        (reqAdminKey === secret || authHeader === `Bearer ${secret}`)
+      );
+    };
+
+    // 1. Attempting with SERPAPI_API_KEY must fail
+    expect(isAuthorized(fakeApiKey, null, fakeAdminSecret)).toBe(false);
+    expect(isAuthorized(null, `Bearer ${fakeApiKey}`, fakeAdminSecret)).toBe(false);
+
+    // 2. Attempting with ADMIN_REFRESH_SECRET must succeed
+    expect(isAuthorized(fakeAdminSecret, null, fakeAdminSecret)).toBe(true);
+    expect(isAuthorized(null, `Bearer ${fakeAdminSecret}`, fakeAdminSecret)).toBe(true);
+
+    // 3. If ADMIN_REFRESH_SECRET is unset, all requests must fail
+    expect(isAuthorized(fakeAdminSecret, null, undefined)).toBe(false);
+    expect(isAuthorized(fakeApiKey, null, undefined)).toBe(false);
   });
 });

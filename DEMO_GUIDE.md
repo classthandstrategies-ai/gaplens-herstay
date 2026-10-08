@@ -19,22 +19,22 @@ This guide provides the exact demonstration walkthrough and spoken script for th
 ### Segment 3: Live SerpApi Investigation (0:40 – 1:15)
 - **Visual**: Click **Analyze Accommodation Supply**. Show the server-side SerpApi retrieval querying `google_maps` and `google_maps_reviews`.
 - **Narrative**:
-  > *"Clicking 'Analyze Accommodation Supply' executes our server-side SerpApi engine. Rather than relying on sponsored listings or static directories, GapLens runs targeted public Google Maps searches, deduplicates listings, computes spherical distances from the gate, and retrieves authentic resident reviews with intelligent caching."*
+  > *"Clicking 'Analyze Accommodation Supply' executes our server-side SerpApi engine. Rather than relying on sponsored listings or static directories, GapLens runs targeted public Google Maps searches, deduplicates listings, computes spherical distances from the gate, and retrieves public reviewer feedback for discovered listings with intelligent server-side caching."*
 
-### Segment 4: Geographic Supply & Actual Review Evidence (1:15 – 1:55)
-- **Visual**: Pan through the interactive Leaflet map markers. Click on accommodations such as *New Sns Reddy Ladies Pg* (0.58 km straight-line) and *Good Lands PG For Ladies* (0.60 km straight-line). Open the **Inspect Evidence** modal to show verbatim resident quotes. Show the **Resident Friction Breakdown** chart below.
+### Segment 4: Geographic Supply & Review Evidence (1:15 – 1:55)
+- **Visual**: Pan through the interactive Leaflet map markers. Click on discovered listings such as *New Sns Reddy Ladies Pg* (0.58 km straight-line) and *Good Lands PG For Ladies* (0.60 km straight-line). Open the **Inspect Evidence** modal to show verbatim public review snippets. Show the **Reviewer Feedback & Friction Breakdown** chart below.
 - **Narrative**:
-  > *"In seconds, GapLens identifies 24 public accommodations within the 3.5 km radius. Notice each pin displays public Google ratings or indicates unrated properties without substituting fake defaults. Clicking any listing reveals verbatim reviewer accounts — highlighting specific friction points such as washroom cleanliness, maintenance response times, or curfew policies. The Resident Friction Breakdown categorizes these feedback signals across 9 operational themes."*
+  > *"In seconds, GapLens identifies 24 discovered listings within the 3.5 km radius. We treat these as discovered public search listings rather than independently verified operating properties. Notice each pin displays public Google ratings or indicates unrated properties without substituting fake defaults. Clicking any listing reveals verbatim public reviewer feedback — highlighting specific friction signals such as washroom cleanliness, maintenance response times, or curfew notes. The Reviewer Feedback Breakdown categorizes these signals across 9 operational themes."*
 
 ### Segment 5: Evidence-Backed Opportunity Hypothesis (1:55 – 2:25)
 - **Visual**: Click **View Opportunity Report**. Scroll through the core hypothesis, spatial distribution pockets, and competitor matrix.
 - **Narrative**:
-  > *"The Opportunity Report synthesizes this public search evidence into a structured market thesis. For Manyata, GapLens highlights a 'Quality & Hygiene Deficit' based on recurring tenant feedback across sampled reviews. It breaks down spatial pockets — showing how supply clusters within 1.5 km of the gate versus the outer transit belts, giving operators a clear, data-grounded starting point for on-the-ground feasibility studies."*
+  > *"The Opportunity Report synthesizes this public search evidence into a structured market thesis. For Manyata, GapLens highlights a 'Quality & Hygiene Deficit' based on recurring feedback patterns across sampled public reviews. It breaks down spatial pockets — showing how supply clusters within 1.5 km of the gate versus the outer transit belts, giving operators a clear, data-grounded starting point for on-the-ground feasibility studies."*
 
 ### Segment 6: Architecture, Transparency & SerpApi Dependency (2:25 – 2:45)
 - **Visual**: Switch to the **Methodology** tab. Show the pipeline architecture diagram and SerpApi attribution.
 - **Narrative**:
-  > *"GapLens is built on Next.js 16, TypeScript, Tailwind CSS, and Leaflet, powered directly by SerpApi's Google Maps and Reviews APIs. All distance calculations are direct straight-line calculations, and review snippets are framed as subjective resident feedback rather than verified claims. SerpApi enables us to transform unstructured public search listings into transparent market intelligence."*
+  > *"GapLens is built on Next.js 16, TypeScript, Tailwind CSS, and Leaflet, powered directly by SerpApi's Google Maps and Reviews APIs. All distance calculations are direct straight-line calculations, and review snippets are framed as subjective public reviewer feedback, not confirmed resident testimony or verified operating claims. SerpApi enables us to transform unstructured public search listings into transparent market intelligence."*
 
 ---
 
