@@ -11,6 +11,7 @@ import { EMPLOYMENT_HUBS } from '@/lib/markets/data';
 import { PropertyCard } from './PropertyCard';
 import { PropertyDetailModal } from './PropertyDetailModal';
 import { ThemeChart } from './ThemeChart';
+import { ContextualHelp } from '@/components/onboarding/ContextualHelp';
 import {
   Search,
   MapPin,
@@ -123,7 +124,7 @@ export function MarketExplorer({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Filter & Market Selector Sidebar (4 Cols) */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
+          <div data-tour="market-filters" className="rounded-xl border border-slate-200 bg-white p-5 shadow-xs">
             <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
               <Sliders className="h-4 w-4 text-teal-600" />
               <span>Market & Radius Filters</span>
@@ -171,7 +172,13 @@ export function MarketExplorer({
             {/* Radius Slider */}
             <div className="mt-4">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-semibold text-slate-700">Analysis Radius</span>
+                <div className="flex items-center gap-1">
+                  <span className="font-semibold text-slate-700">Analysis Radius</span>
+                  <ContextualHelp
+                    title="Straight-Line Radius Baseline"
+                    content="Calculates Euclidean distance from the employment anchor coordinate. Actual travel times vary based on walking paths, metro connectivity, and peak traffic."
+                  />
+                </div>
                 <span className="font-mono font-bold text-teal-700">
                   {radiusKm.toFixed(1)} km (straight-line)
                 </span>
@@ -193,9 +200,10 @@ export function MarketExplorer({
 
             {/* Primary Action Button */}
             <button
+              data-tour="analyze-btn"
               onClick={handleTriggerAnalysis}
               disabled={isLoading}
-              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-slate-800 disabled:opacity-50 transition-all"
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-slate-800 disabled:opacity-50 transition-all cursor-pointer"
             >
               {isLoading ? (
                 <>
@@ -281,9 +289,15 @@ export function MarketExplorer({
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase">
-                Review Friction Index
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-[11px] font-semibold text-slate-500 uppercase">
+                  Review Friction Index
+                </span>
+                <ContextualHelp
+                  title="Review Friction Index"
+                  content="A 0–100 composite indicator aggregating the frequency and severity of tenant dissatisfaction themes. Unknown or missing review ratings are preserved as null and not penalized."
+                />
+              </div>
               <div className="mt-1 flex items-baseline gap-1.5">
                 <span className="text-xl font-bold text-slate-900">
                   {initialReport.metrics.reviewFrictionIndex}
@@ -293,9 +307,15 @@ export function MarketExplorer({
             </div>
 
             <div className="rounded-xl border border-slate-200 bg-white p-3.5 shadow-xs">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase">
-                Evidence Confidence
-              </span>
+              <div className="flex items-center gap-1">
+                <span className="text-[11px] font-semibold text-slate-500 uppercase">
+                  Evidence Confidence
+                </span>
+                <ContextualHelp
+                  title="Evidence Confidence Rating"
+                  content="Grounded in both total review volume and the proportion of discovered accommodations with analyzed reviews. Prevents generalizing small review samples across an entire market."
+                />
+              </div>
               <div className="mt-1">
                 <span
                   className={`inline-block rounded-md border px-2 py-0.5 text-xs font-bold capitalize ${confidenceBadgeColor}`}
@@ -327,7 +347,7 @@ export function MarketExplorer({
           </div>
 
           {/* Split Map & Property Results Pane */}
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div data-tour="property-map-area" className="grid grid-cols-1 md:grid-cols-12 gap-4">
             {/* Map Column (7 Cols on desktop) */}
             <div
               className={`h-[420px] md:h-[540px] md:col-span-7 ${
@@ -388,10 +408,12 @@ export function MarketExplorer({
       </div>
 
       {/* Review Theme Intelligence Breakdown Section */}
-      <ThemeChart
-        themes={initialReport.themeBreakdown}
-        totalReviewsAnalyzed={initialReport.metrics.totalReviewsAnalyzed}
-      />
+      <div data-tour="friction-breakdown">
+        <ThemeChart
+          themes={initialReport.themeBreakdown}
+          totalReviewsAnalyzed={initialReport.metrics.totalReviewsAnalyzed}
+        />
+      </div>
 
       {/* Selected Property Detail Modal */}
       <PropertyDetailModal

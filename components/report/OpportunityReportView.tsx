@@ -13,6 +13,7 @@ import {
   Compass,
   Info,
 } from 'lucide-react';
+import { ContextualHelp } from '@/components/onboarding/ContextualHelp';
 
 interface OpportunityReportViewProps {
   report: AnalysisReport;
@@ -87,10 +88,17 @@ export function OpportunityReportView({
       )}
 
       {/* Primary Thesis / Executive Hypothesis Box */}
-      <div className="rounded-2xl border-2 border-teal-600/30 bg-gradient-to-br from-teal-50/50 via-white to-slate-50 p-6 shadow-sm">
+      <div
+        data-tour="report-hypothesis"
+        className="rounded-2xl border-2 border-teal-600/30 bg-gradient-to-br from-teal-50/50 via-white to-slate-50 p-6 shadow-sm"
+      >
         <div className="flex items-center gap-2 text-teal-800 font-bold text-xs uppercase tracking-wider">
           <Target className="h-4 w-4 text-teal-600" />
           <span>Core Opportunity Hypothesis</span>
+          <ContextualHelp
+            title="Market Opportunity Hypothesis"
+            content="A directional synthesis of supply concentration, geographical proximity, and recurring tenant friction. Serves as an empirical baseline requiring on-the-ground validation before capital deployment."
+          />
         </div>
         <h2 className="mt-2 text-xl sm:text-2xl font-bold text-slate-900 leading-snug">
           {opportunityHypothesis.headline}

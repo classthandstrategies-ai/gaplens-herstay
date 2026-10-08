@@ -12,6 +12,133 @@ import { getSampleListingsForHub } from '@/lib/sample/sampleData';
 import { buildAnalysisReport } from '@/lib/analysis/gapEngine';
 import { isWithinRadius } from '@/lib/geo/distance';
 import { AlertCircle, ExternalLink } from 'lucide-react';
+import { OnboardingProvider, useOnboarding } from '@/lib/onboarding/OnboardingContext';
+import { WelcomeModal } from '@/components/onboarding/WelcomeModal';
+import { TourCoachmark } from '@/components/onboarding/TourCoachmark';
+
+function HomePageContent({
+  report,
+  isLoading,
+  statusNotice,
+  setStatusNotice,
+  handleRunAnalysis,
+  handleSelectHubFromHero,
+}: {
+  report: AnalysisReport;
+  isLoading: boolean;
+  statusNotice: { type: 'info' | 'warning' | 'error'; message: string } | null;
+  setStatusNotice: React.Dispatch<
+    React.SetStateAction<{ type: 'info' | 'warning' | 'error'; message: string } | null>
+  >;
+  handleRunAnalysis: (hubId: string, radiusKm: number) => Promise<void>;
+  handleSelectHubFromHero: (hubId: string) => void;
+}) {
+  const { activeTab, setActiveTab, replayTour } = useOnboarding();
+
+  return (
+    <div className="flex min-h-screen flex-col bg-slate-50">
+      {/* Navigation with How to Use tour replay trigger */}
+      <Navbar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        dataSource={report.dataSource}
+        onReplayTour={replayTour}
+      />
+
+      {/* Optional Notification Toast */}
+      {statusNotice && (
+        <div
+          className={`border-b px-4 py-2.5 text-xs font-medium transition-all ${
+            statusNotice.type === 'error'
+              ? 'bg-rose-50 border-rose-200 text-rose-800'
+              : statusNotice.type === 'warning'
+              ? 'bg-amber-50 border-amber-200 text-amber-800'
+              : 'bg-teal-50 border-teal-200 text-teal-800'
+          }`}
+        >
+          <div className="mx-auto max-w-7xl flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span>{statusNotice.message}</span>
+            </div>
+            <button
+              onClick={() => setStatusNotice(null)}
+              className="text-xs underline hover:opacity-75 cursor-pointer"
+            >
+              Dismiss
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content Area */}
+      <main className="flex-1">
+        {activeTab === 'explorer' && (
+          <>
+            <LandingHero
+              onExplore={() => {
+                const el = document.getElementById('market-explorer-anchor');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              onSelectHub={handleSelectHubFromHero}
+            />
+            <div id="market-explorer-anchor">
+              <MarketExplorer
+                initialReport={report}
+                onRunAnalysis={handleRunAnalysis}
+                isLoading={isLoading}
+                onNavigateToReport={() => setActiveTab('report')}
+              />
+            </div>
+          </>
+        )}
+
+        {activeTab === 'report' && (
+          <OpportunityReportView
+            report={report}
+            onNavigateToExplorer={() => setActiveTab('explorer')}
+          />
+        )}
+
+        {activeTab === 'methodology' && <MethodologyView />}
+      </main>
+
+      {/* Guided Onboarding Modal & Tour Overlays */}
+      <WelcomeModal />
+      <TourCoachmark />
+
+      {/* Product Footer */}
+      <footer className="border-t border-slate-200 bg-white py-8 text-xs text-slate-500">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <div className="font-bold text-slate-800">GapLens — HerStay Intelligence</div>
+            <p className="mt-0.5">
+              SerpApi India Hackathon 2026 • Commerce & Market Intelligence Track
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs">
+            <button
+              onClick={() => setActiveTab('methodology')}
+              className="hover:text-slate-900 underline cursor-pointer"
+            >
+              Methodology & Limitations
+            </button>
+            <a
+              href="https://serpapi.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-slate-900 inline-flex items-center gap-1"
+            >
+              <span>Powered by SerpApi</span>
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}
 
 export default function HomePage() {
   const [activeTab, setActiveTab] = useState<'explorer' | 'report' | 'methodology'>('explorer');
@@ -104,101 +231,15 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
-      {/* Navigation */}
-      <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        dataSource={report.dataSource}
+    <OnboardingProvider activeTab={activeTab} setActiveTab={setActiveTab}>
+      <HomePageContent
+        report={report}
+        isLoading={isLoading}
+        statusNotice={statusNotice}
+        setStatusNotice={setStatusNotice}
+        handleRunAnalysis={handleRunAnalysis}
+        handleSelectHubFromHero={handleSelectHubFromHero}
       />
-
-      {/* Optional Notification Toast */}
-      {statusNotice && (
-        <div
-          className={`border-b px-4 py-2.5 text-xs font-medium transition-all ${
-            statusNotice.type === 'error'
-              ? 'bg-rose-50 border-rose-200 text-rose-800'
-              : statusNotice.type === 'warning'
-              ? 'bg-amber-50 border-amber-200 text-amber-800'
-              : 'bg-teal-50 border-teal-200 text-teal-800'
-          }`}
-        >
-          <div className="mx-auto max-w-7xl flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 shrink-0" />
-              <span>{statusNotice.message}</span>
-            </div>
-            <button
-              onClick={() => setStatusNotice(null)}
-              className="text-xs underline hover:opacity-75"
-            >
-              Dismiss
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Main Content Area */}
-      <main className="flex-1">
-        {activeTab === 'explorer' && (
-          <>
-            <LandingHero
-              onExplore={() => {
-                const el = document.getElementById('market-explorer-anchor');
-                if (el) el.scrollIntoView({ behavior: 'smooth' });
-              }}
-              onSelectHub={handleSelectHubFromHero}
-            />
-            <div id="market-explorer-anchor">
-              <MarketExplorer
-                initialReport={report}
-                onRunAnalysis={handleRunAnalysis}
-                isLoading={isLoading}
-                onNavigateToReport={() => setActiveTab('report')}
-              />
-            </div>
-          </>
-        )}
-
-        {activeTab === 'report' && (
-          <OpportunityReportView
-            report={report}
-            onNavigateToExplorer={() => setActiveTab('explorer')}
-          />
-        )}
-
-        {activeTab === 'methodology' && <MethodologyView />}
-      </main>
-
-      {/* Product Footer */}
-      <footer className="border-t border-slate-200 bg-white py-8 text-xs text-slate-500">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <div className="font-bold text-slate-800">GapLens — HerStay Intelligence</div>
-            <p className="mt-0.5">
-              SerpApi India Hackathon 2026 • Commerce & Market Intelligence Track
-            </p>
-          </div>
-
-          <div className="flex items-center gap-4 text-xs">
-            <button
-              onClick={() => setActiveTab('methodology')}
-              className="hover:text-slate-900 underline"
-            >
-              Methodology & Limitations
-            </button>
-            <a
-              href="https://serpapi.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-slate-900 inline-flex items-center gap-1"
-            >
-              <span>Powered by SerpApi</span>
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </OnboardingProvider>
   );
 }
