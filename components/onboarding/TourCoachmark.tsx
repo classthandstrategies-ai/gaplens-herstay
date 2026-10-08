@@ -99,51 +99,34 @@ export function TourCoachmark() {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    const cleanup = updateRect();
-
-    const handleScrollOrResize = () => {
-      const target = document.querySelector(currentStep.targetSelector);
-      if (target) {
-        const r = target.getBoundingClientRect();
-        setTargetRect({
-          top: r.top + window.scrollY,
-          left: r.left + window.scrollX,
-          width: r.width,
-          height: r.height,
-          bottom: r.bottom + window.scrollY,
-          right: r.right + window.scrollX,
-        });
-      }
-    };
-
-    window.addEventListener('scroll', handleScrollOrResize, { passive: true });
-    window.addEventListener('resize', handleScrollOrResize);
+    const timer = setTimeout(updateRect, 150);
+    window.addEventListener('resize', updateRect);
+    window.addEventListener('scroll', updateRect, { passive: true });
 
     return () => {
-      if (cleanup) cleanup();
-      window.removeEventListener('scroll', handleScrollOrResize);
-      window.removeEventListener('resize', handleScrollOrResize);
+      clearTimeout(timer);
+      window.removeEventListener('resize', updateRect);
+      window.removeEventListener('scroll', updateRect);
     };
   }, [isOpen, currentStepIndex, currentStep, updateRect]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !currentStep) return null;
 
-  // Calculate desktop popover position
+  // Calculate smart positioning for desktop coachmark
   let desktopStyle: React.CSSProperties = {};
   if (!isMobile && targetRect) {
     const cardWidth = 380;
     const padding = 16;
-    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
-    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
 
-    // Viewport-relative coordinates
-    const elViewportTop = targetRect.top - (typeof window !== 'undefined' ? window.scrollY : 0);
-    const elViewportLeft = targetRect.left - (typeof window !== 'undefined' ? window.scrollX : 0);
-    const elViewportBottom = elViewportTop + targetRect.height;
-    const elViewportRight = elViewportLeft + targetRect.width;
+    const elViewportTop = targetRect.top - window.scrollY;
+    const elViewportBottom = targetRect.bottom - window.scrollY;
+    const elViewportLeft = targetRect.left - window.scrollX;
+    const elViewportRight = targetRect.right - window.scrollX;
 
-    let computedTop = elViewportTop;
-    let computedLeft = elViewportRight + padding;
+    let computedTop = elViewportBottom + padding;
+    let computedLeft = elViewportLeft;
 
     if (currentStep.position === 'right') {
       computedLeft = elViewportRight + padding;
@@ -197,17 +180,17 @@ export function TourCoachmark() {
             left: `${Math.max(0, targetRect.left - 6)}px`,
             width: `${Math.min(targetRect.width + 12, (typeof window !== 'undefined' ? window.innerWidth : 1200) - Math.max(0, targetRect.left - 6) - 4)}px`,
             height: `${targetRect.height + 12}px`,
-            boxShadow: '0 0 0 9999px rgba(15, 23, 42, 0.65)',
+            boxShadow: '0 0 0 9999px rgba(18, 21, 24, 0.65)',
             pointerEvents: 'none',
             zIndex: 9990,
           }}
-          className="rounded-2xl ring-2 ring-teal-400 ring-offset-2 ring-offset-slate-900 transition-all duration-300"
+          className="rounded-2xl ring-2 ring-teal-400 ring-offset-2 ring-offset-stone-900 transition-all duration-300"
         />
       )}
 
       {/* Backdrop for fallback when no target rect is measured yet */}
       {!targetRect && (
-        <div className="fixed inset-0 bg-slate-950/65 backdrop-blur-xs z-[9990]" />
+        <div className="fixed inset-0 bg-stone-950/65 backdrop-blur-xs z-[9990]" />
       )}
 
       {/* Floating Coachmark Card */}
@@ -219,34 +202,34 @@ export function TourCoachmark() {
         style={isMobile ? undefined : desktopStyle}
         className={
           isMobile
-            ? 'fixed bottom-3 inset-x-3 z-[9999] max-h-[85vh] overflow-y-auto rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-2xl animate-slideUp'
+            ? 'fixed bottom-3 inset-x-3 z-[9999] max-h-[85vh] overflow-y-auto rounded-3xl border border-stone-200/90 bg-white p-4.5 sm:p-6 shadow-2xl animate-slideUp'
             : !targetRect
-            ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[400px] max-w-[calc(100vw-24px)] rounded-2xl border border-slate-200/90 bg-white p-6 shadow-2xl'
-            : 'rounded-2xl border border-slate-200/90 bg-white p-5 shadow-2xl transition-all duration-200'
+            ? 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[9999] w-[400px] max-w-[calc(100vw-24px)] rounded-3xl border border-stone-200/90 bg-white p-6 shadow-2xl'
+            : 'rounded-3xl border border-stone-200/90 bg-white p-5.5 shadow-2xl transition-all duration-200'
         }
       >
         {/* Progress Bar Header */}
-        <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-3">
+        <div className="flex items-center justify-between gap-3 border-b border-stone-100 pb-3">
           <div className="flex items-center gap-2">
-            <span className="rounded-full bg-teal-50 px-2.5 py-0.5 text-[11px] font-bold text-teal-800 border border-teal-200 uppercase tracking-wide">
+            <span className="rounded-md bg-stone-100 px-2 py-0.5 font-mono text-[10px] font-bold text-stone-700 uppercase tracking-wider border border-stone-200">
               Step {currentStepIndex + 1} of {totalSteps}
             </span>
-            <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline">
-              GapLens Walkthrough
+            <span className="font-mono text-[11px] text-stone-400 hidden sm:inline">
+              Briefing Tour
             </span>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               onClick={skipTour}
-              className="text-[11px] font-medium text-slate-400 hover:text-slate-600 transition-colors cursor-pointer"
+              className="font-mono text-[11px] font-medium text-stone-400 hover:text-stone-700 transition-colors cursor-pointer"
             >
               Skip
             </button>
             <button
               onClick={skipTour}
               aria-label="Close tour"
-              className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 transition-colors cursor-pointer"
+              className="rounded-lg p-1 text-stone-400 hover:bg-stone-100 hover:text-stone-700 transition-colors cursor-pointer"
             >
               <X className="h-4 w-4" />
             </button>
@@ -254,33 +237,33 @@ export function TourCoachmark() {
         </div>
 
         {/* Linear Progress Indicator */}
-        <div className="mt-2.5 h-1 w-full overflow-hidden rounded-full bg-slate-100">
+        <div className="mt-2.5 h-1 w-full overflow-hidden rounded-full bg-stone-100">
           <div
-            className="h-full bg-teal-500 transition-all duration-300 rounded-full"
+            className="h-full bg-teal-700 transition-all duration-300 rounded-full"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
 
         {/* Content Body */}
-        <div className="mt-3.5 space-y-2">
+        <div className="mt-3.5 space-y-1.5">
           <h3
             id="tour-step-title"
-            className="text-base font-extrabold tracking-tight text-slate-900"
+            className="font-serif text-lg font-bold tracking-tight text-stone-900"
           >
             {currentStep.title}
           </h3>
-          <p className="text-xs font-semibold text-teal-700">
+          <p className="text-xs font-semibold text-teal-800 font-sans">
             {currentStep.subtitle}
           </p>
-          <p className="text-xs text-slate-600 leading-relaxed">
+          <p className="text-xs text-stone-600 leading-relaxed font-sans">
             {currentStep.description}
           </p>
 
           {/* Key Insight Box */}
           {currentStep.keyInsight && (
-            <div className="mt-3 rounded-xl border border-teal-100 bg-teal-50/60 p-2.5 text-[11px] text-teal-900 flex items-start gap-2">
-              <Info className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-              <div className="leading-snug">
+            <div className="mt-3 rounded-2xl border border-teal-100 bg-teal-50/60 p-3 text-[11px] text-teal-900 flex items-start gap-2.5">
+              <Info className="h-4 w-4 text-teal-700 shrink-0 mt-0.5" />
+              <div className="leading-relaxed font-sans">
                 <span className="font-bold">Key Principle:</span> {currentStep.keyInsight}
               </div>
             </div>
@@ -288,11 +271,11 @@ export function TourCoachmark() {
         </div>
 
         {/* Navigation Action Buttons */}
-        <div className="mt-4 sm:mt-5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
+        <div className="mt-5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 pt-3 border-t border-stone-100">
           <button
             onClick={prevStep}
             disabled={currentStepIndex === 0}
-            className="inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-100 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
           >
             <ChevronLeft className="h-3.5 w-3.5" />
             <span>Back</span>
@@ -302,21 +285,21 @@ export function TourCoachmark() {
             <button
               id="coachmark-primary-btn"
               onClick={nextStep}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-stone-900 px-4 py-2 text-xs font-bold text-white shadow-2xs hover:bg-stone-800 transition-all focus:outline-hidden focus:ring-2 focus:ring-teal-700 cursor-pointer"
             >
               <span>Next</span>
-              <ChevronRight className="h-3.5 w-3.5 text-teal-400" />
+              <ChevronRight className="h-3.5 w-3.5 text-teal-300" />
             </button>
           ) : (
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => {
                   skipTour();
                   setActiveTab('methodology');
                 }}
-                className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1 rounded-xl border border-stone-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50 transition-colors cursor-pointer"
               >
-                <BookOpen className="h-3 w-3 text-slate-500" />
+                <BookOpen className="h-3 w-3 text-stone-500" />
                 <span>Methodology</span>
               </button>
               <button
@@ -325,7 +308,7 @@ export function TourCoachmark() {
                   nextStep();
                   setActiveTab('explorer');
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-3.5 sm:px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-teal-700 transition-all focus:outline-none focus:ring-2 focus:ring-teal-500 cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-teal-800 px-3.5 sm:px-4 py-2 text-xs font-bold text-white shadow-2xs hover:bg-teal-900 transition-all focus:outline-hidden focus:ring-2 focus:ring-teal-700 cursor-pointer"
               >
                 <CheckCircle2 className="h-3.5 w-3.5" />
                 <span>Start Exploring</span>

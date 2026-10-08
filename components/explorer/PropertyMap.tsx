@@ -42,8 +42,8 @@ function createHubIcon() {
     className: 'custom-hub-marker',
     html: `
       <div style="
-        background: #0f172a;
-        color: #2dd4bf;
+        background: #121518;
+        color: #5eead4;
         border: 2.5px solid #ffffff;
         border-radius: 9999px;
         width: 38px;
@@ -51,8 +51,7 @@ function createHubIcon() {
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 14px rgba(0,0,0,0.35);
-        font-weight: bold;
+        box-shadow: 0 4px 16px rgba(18,21,24,0.4);
       ">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/>
@@ -69,14 +68,14 @@ function createHubIcon() {
 }
 
 function createPropertyIcon(rating: number | null, isSelected: boolean) {
-  let bgColor = '#64748b'; // Slate for unrated
+  let bgColor = '#78716c'; // Stone for unrated
   let text = '•';
 
   if (rating !== null) {
     text = rating.toFixed(1);
-    if (rating >= 3.8) bgColor = '#0d9488'; // Teal
-    else if (rating >= 3.4) bgColor = '#d97706'; // Amber
-    else bgColor = '#e11d48'; // Rose
+    if (rating >= 3.8) bgColor = '#0f766e'; // Deep Teal
+    else if (rating >= 3.4) bgColor = '#b45309'; // Warm Amber
+    else bgColor = '#be123c'; // Rose
   }
 
   const size = isSelected ? 34 : 28;
@@ -88,16 +87,17 @@ function createPropertyIcon(rating: number | null, isSelected: boolean) {
       <div style="
         background: ${bgColor};
         color: #ffffff;
-        border: ${borderWidth}px solid ${isSelected ? '#0f172a' : '#ffffff'};
+        border: ${borderWidth}px solid ${isSelected ? '#121518' : '#ffffff'};
         border-radius: 9999px;
         width: ${size}px;
         height: ${size}px;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         font-size: ${rating !== null ? '11px' : '14px'};
         font-weight: 700;
-        box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.28);
         transform: ${isSelected ? 'scale(1.15)' : 'scale(1)'};
         transition: transform 0.2s ease;
       ">
@@ -130,7 +130,7 @@ export default function PropertyMap({
   const hubIcon = useMemo(() => createHubIcon(), []);
 
   return (
-    <div className="relative h-full w-full overflow-hidden rounded-xl border border-slate-200 bg-slate-100 shadow-sm">
+    <div className="relative h-full w-full overflow-hidden rounded-2xl border border-stone-200 bg-stone-100 shadow-2xs">
       <MapContainer
         center={center}
         zoom={13.5}
@@ -151,9 +151,9 @@ export default function PropertyMap({
           center={center}
           radius={radiusKm * 1000}
           pathOptions={{
-            color: '#0d9488',
-            fillColor: '#0d9488',
-            fillOpacity: 0.08,
+            color: '#0f766e',
+            fillColor: '#0f766e',
+            fillOpacity: 0.07,
             weight: 1.5,
             dashArray: '4, 6',
           }}
@@ -162,14 +162,14 @@ export default function PropertyMap({
         {/* Central Employment Hub Marker */}
         <Marker position={center} icon={hubIcon}>
           <Popup>
-            <div className="p-1 max-w-xs">
-              <span className="inline-block rounded bg-slate-900 px-2 py-0.5 text-[10px] font-semibold text-teal-300">
-                Primary Employment Anchor
+            <div className="p-1 max-w-xs font-sans">
+              <span className="inline-block rounded bg-stone-900 px-2 py-0.5 font-mono text-[10px] font-bold text-teal-300 uppercase tracking-wider">
+                Primary Anchor
               </span>
-              <h4 className="mt-1 font-bold text-slate-900 text-sm">{hub.name}</h4>
-              <p className="text-xs text-slate-600 mt-0.5">{hub.landmark}</p>
-              <div className="mt-2 text-[11px] text-slate-500">
-                Analysis Perimeter: <strong>{radiusKm} km radius</strong>
+              <h4 className="mt-1 font-serif font-bold text-stone-900 text-sm">{hub.name}</h4>
+              <p className="text-xs text-stone-600 mt-0.5">{hub.landmark}</p>
+              <div className="mt-2 font-mono text-[11px] text-stone-500">
+                Perimeter: <strong>{radiusKm} km straight-line</strong>
               </div>
             </div>
           </Popup>
@@ -190,29 +190,29 @@ export default function PropertyMap({
               }}
             >
               <Popup>
-                <div className="p-1 max-w-xs">
+                <div className="p-1 max-w-xs font-sans">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] font-medium text-slate-500 uppercase">
+                    <span className="font-mono text-[10px] font-medium text-stone-500 uppercase tracking-wider">
                       {listing.category || "Women's Stay"}
                     </span>
                     {listing.rating !== null ? (
-                      <span className="flex items-center gap-0.5 rounded bg-amber-50 px-1.5 py-0.5 text-xs font-semibold text-amber-900">
+                      <span className="font-mono text-xs font-bold text-amber-900 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
                         ★ {listing.rating.toFixed(1)} ({listing.reviewCount})
                       </span>
                     ) : (
-                      <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
+                      <span className="rounded bg-stone-100 px-1.5 py-0.2 font-mono text-[10px] font-medium text-stone-600">
                         Unrated
                       </span>
                     )}
                   </div>
-                  <h4 className="mt-1 font-semibold text-slate-900 text-sm leading-tight">
+                  <h4 className="mt-1 font-serif font-bold text-stone-900 text-sm leading-tight">
                     {listing.title}
                   </h4>
-                  <p className="mt-0.5 text-xs text-slate-600 line-clamp-2">
+                  <p className="mt-0.5 text-xs text-stone-600 line-clamp-2">
                     {listing.address}
                   </p>
-                  <p className="mt-1.5 text-xs font-medium text-teal-700">
-                    {formatStraightLineDistance(listing.distanceKm)} to {hub.name}
+                  <p className="mt-1.5 font-mono text-xs font-semibold text-teal-800">
+                    {formatStraightLineDistance(listing.distanceKm)} straight-line
                   </p>
 
                   {listing.dominantComplaints && listing.dominantComplaints.length > 0 && (
@@ -220,7 +220,7 @@ export default function PropertyMap({
                       {listing.dominantComplaints.map((c) => (
                         <span
                           key={c}
-                          className="rounded bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-700"
+                          className="rounded bg-rose-50 px-1.5 py-0.5 font-mono text-[10px] font-medium text-rose-800 border border-rose-200"
                         >
                           {c}
                         </span>
@@ -230,7 +230,7 @@ export default function PropertyMap({
 
                   <button
                     onClick={() => onSelectProperty(listing)}
-                    className="mt-3 block w-full rounded bg-slate-900 py-1.5 text-center text-xs font-medium text-white hover:bg-slate-800"
+                    className="mt-3 block w-full rounded-xl bg-stone-900 py-1.5 text-center text-xs font-semibold text-white hover:bg-stone-800 transition-colors cursor-pointer"
                   >
                     Inspect Reviews & Evidence
                   </button>
@@ -241,27 +241,27 @@ export default function PropertyMap({
         })}
       </MapContainer>
 
-      {/* Map Legend overlay */}
-      <div className="absolute bottom-3 left-3 z-[1000] rounded-lg bg-white/95 p-2.5 shadow-md backdrop-blur-sm border border-slate-200 text-xs">
-        <div className="font-semibold text-slate-800 mb-1.5 flex items-center gap-1.5">
-          <span>Map Legend</span>
+      {/* Map Legend overlay (Architectural floating card) */}
+      <div className="absolute bottom-3 left-3 z-[1000] rounded-xl bg-white/95 p-3 shadow-md backdrop-blur-xs border border-stone-200 text-xs">
+        <div className="font-mono text-[10px] font-bold text-stone-500 uppercase tracking-wider mb-2">
+          Spatial Map Legend
         </div>
-        <div className="flex flex-col gap-1 text-[11px] text-slate-600">
+        <div className="flex flex-col gap-1.5 text-[11px] text-stone-700">
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-slate-900 ring-2 ring-teal-400" />
-            <span>{hub.name} (Anchor)</span>
+            <span className="h-3 w-3 rounded-full bg-stone-900 ring-2 ring-teal-400" />
+            <span className="font-medium">{hub.name} (Anchor)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-teal-600" />
-            <span>Rating 3.8+ (Positive)</span>
+            <span className="h-3 w-3 rounded-full bg-teal-700" />
+            <span>3.8+ Rating (Lower Friction)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-amber-500" />
-            <span>Rating 3.4 - 3.7 (Moderate Friction)</span>
+            <span className="h-3 w-3 rounded-full bg-amber-600" />
+            <span>3.4 – 3.7 (Moderate Friction)</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="h-3 w-3 rounded-full bg-rose-600" />
-            <span>Rating &lt; 3.4 (High Complaint Density)</span>
+            <span className="h-3 w-3 rounded-full bg-rose-700" />
+            <span>&lt; 3.4 (Elevated Complaints)</span>
           </div>
         </div>
       </div>

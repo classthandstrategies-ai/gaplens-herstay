@@ -36,7 +36,7 @@ function HomePageContent({
   const { activeTab, setActiveTab, replayTour } = useOnboarding();
 
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50 overflow-x-hidden">
+    <div className="flex min-h-screen flex-col bg-stone-50/60 text-stone-900 overflow-x-hidden font-sans">
       {/* Navigation with How to Use tour replay trigger */}
       <Navbar
         activeTab={activeTab}
@@ -108,30 +108,30 @@ function HomePageContent({
       <TourCoachmark />
 
       {/* Product Footer */}
-      <footer className="border-t border-slate-200 bg-white py-8 text-xs text-slate-500">
+      <footer className="border-t border-stone-200 bg-white py-8 text-xs text-stone-500">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
-            <div className="font-bold text-slate-800">GapLens — HerStay Intelligence</div>
-            <p className="mt-0.5">
-              SerpApi India Hackathon 2026 • Commerce & Market Intelligence Track
+            <div className="font-serif font-bold text-stone-900 text-sm">GapLens — HerStay Intelligence</div>
+            <p className="mt-0.5 font-sans">
+              SerpApi India Hackathon 2026 • Commerce &amp; Market Intelligence Track
             </p>
           </div>
 
-          <div className="flex items-center gap-4 text-xs">
+          <div className="flex items-center gap-4 text-xs font-mono">
             <button
               onClick={() => setActiveTab('methodology')}
-              className="hover:text-slate-900 underline cursor-pointer"
+              className="hover:text-stone-900 underline cursor-pointer"
             >
-              Methodology & Limitations
+              Methodology &amp; Governance
             </button>
             <a
               href="https://serpapi.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-slate-900 inline-flex items-center gap-1"
+              className="hover:text-stone-900 inline-flex items-center gap-1"
             >
               <span>Powered by SerpApi</span>
-              <ExternalLink className="h-3 w-3" />
+              <ExternalLink className="h-3 w-3 text-stone-400" />
             </a>
           </div>
         </div>
