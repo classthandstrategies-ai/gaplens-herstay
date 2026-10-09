@@ -265,7 +265,7 @@ export function MarketExplorer({
           <div className="p-3.5 sm:p-4">
             <div className="flex items-center justify-between">
               <span className="font-mono text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
-                Supply Identified
+                {initialReport.dataSource === 'illustrative_sample' ? 'Sample Supply' : 'Supply Identified'}
               </span>
               <span className="rounded bg-stone-100 px-1.5 py-0.5 text-[10px] font-medium text-stone-600 capitalize">
                 {initialReport.metrics.supplyVisibility} visibility
@@ -276,7 +276,7 @@ export function MarketExplorer({
                 {initialReport.metrics.listingsInRadius}
               </span>
               <span className="text-xs text-stone-500 font-sans">
-                within {initialReport.radiusKm} km
+                {initialReport.dataSource === 'illustrative_sample' ? 'sample units' : `within ${initialReport.radiusKm} km`}
               </span>
             </div>
           </div>
@@ -285,10 +285,10 @@ export function MarketExplorer({
           <div className="p-3.5 sm:p-4">
             <div className="flex items-center justify-between">
               <span className="font-mono text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
-                Public Reviews
+                {initialReport.dataSource === 'illustrative_sample' ? 'Sample Reviews' : 'Public Reviews'}
               </span>
               <span className="font-mono text-[10px] text-stone-400">
-                {initialReport.metrics.listingsWithReviewsCount} / {initialReport.metrics.listingsInRadius} places
+                {initialReport.metrics.listingsWithReviewsCount} / {initialReport.metrics.listingsInRadius} {initialReport.dataSource === 'illustrative_sample' ? 'sample' : 'places'}
               </span>
             </div>
             <div className="mt-1 flex items-baseline gap-2">
@@ -296,7 +296,7 @@ export function MarketExplorer({
                 {initialReport.metrics.totalReviewsAnalyzed}
               </span>
               <span className="text-xs text-stone-500 font-sans">
-                sampled comments
+                {initialReport.dataSource === 'illustrative_sample' ? 'demo comments' : 'sampled comments'}
               </span>
             </div>
           </div>
@@ -306,10 +306,10 @@ export function MarketExplorer({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <span className="font-mono text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
-                  Friction Index
+                  {initialReport.dataSource === 'illustrative_sample' ? 'Friction Index (Demo)' : 'Friction Index'}
                 </span>
                 <ContextualHelp
-                  title="Tenant Friction Index"
+                  title={initialReport.dataSource === 'illustrative_sample' ? 'Demonstration Friction Index' : 'Public Review Friction Index'}
                   content="0–100 composite severity score measuring recurrence of complaints (hygiene, maintenance, security, food, curfews) across public reviews. Missing ratings are preserved as null and not penalized."
                 />
               </div>
@@ -320,7 +320,7 @@ export function MarketExplorer({
                 {initialReport.metrics.reviewFrictionIndex}
               </span>
               <span className="text-xs text-stone-500 font-sans">
-                composite friction
+                {initialReport.dataSource === 'illustrative_sample' ? 'illustrative friction' : 'composite friction'}
               </span>
             </div>
           </div>
@@ -407,7 +407,9 @@ export function MarketExplorer({
           <div className="flex items-center justify-between pb-3 border-b border-stone-200 px-1">
             <div>
               <span className="font-serif text-sm font-bold text-stone-900">
-                Discovered Accommodations
+                {initialReport.dataSource === 'illustrative_sample'
+                  ? 'Demonstration Accommodations'
+                  : 'Discovered Accommodations'}
               </span>
               <span className="ml-2 font-mono text-[11px] text-stone-500 font-medium">
                 ({initialReport.listings.length})
@@ -449,6 +451,7 @@ export function MarketExplorer({
                   listing={listing}
                   isSelected={selectedProperty?.id === listing.id}
                   onSelect={() => setSelectedProperty(listing)}
+                  dataSource={initialReport.dataSource}
                 />
               ))
             )}
@@ -464,6 +467,7 @@ export function MarketExplorer({
         <ThemeChart
           themes={initialReport.themeBreakdown}
           totalReviewsAnalyzed={initialReport.metrics.totalReviewsAnalyzed}
+          dataSource={initialReport.dataSource}
         />
       </section>
 
@@ -472,6 +476,7 @@ export function MarketExplorer({
         listing={selectedProperty}
         hub={initialReport.hub}
         onClose={() => setSelectedProperty(null)}
+        dataSource={initialReport.dataSource}
       />
     </div>
   );

@@ -18,12 +18,14 @@ interface PropertyDetailModalProps {
   listing: PlaceListing | null;
   hub: EmploymentHub;
   onClose: () => void;
+  dataSource?: 'live_serpapi' | 'cached_serpapi' | 'illustrative_sample';
 }
 
 export function PropertyDetailModal({
   listing,
   hub,
   onClose,
+  dataSource,
 }: PropertyDetailModalProps) {
   if (!listing) return null;
 
@@ -73,7 +75,7 @@ export function PropertyDetailModal({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
             <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3 sm:p-3.5">
               <span className="font-mono text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">
-                Public Rating
+                {dataSource === 'illustrative_sample' ? 'Sample Rating' : 'Public Rating'}
               </span>
               {listing.rating !== null ? (
                 <div className="mt-1 flex items-baseline gap-1">
@@ -85,20 +87,20 @@ export function PropertyDetailModal({
                 </div>
               ) : (
                 <div className="mt-1 font-mono text-xs font-semibold text-stone-500">
-                  Unrated on Maps
+                  {dataSource === 'illustrative_sample' ? 'Unrated in Sample' : 'Unrated on Maps'}
                 </div>
               )}
             </div>
 
             <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3 sm:p-3.5">
               <span className="font-mono text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">
-                Review Volume
+                {dataSource === 'illustrative_sample' ? 'Sample Reviews' : 'Review Volume'}
               </span>
               <div className="mt-1 flex items-baseline gap-1">
                 <span className="font-serif text-xl font-bold text-stone-900">
                   {listing.reviewCount}
                 </span>
-                <span className="text-xs text-stone-500">public</span>
+                <span className="text-xs text-stone-500">{dataSource === 'illustrative_sample' ? 'sample' : 'public'}</span>
               </div>
             </div>
 
@@ -114,12 +116,12 @@ export function PropertyDetailModal({
 
             <div className="rounded-2xl border border-stone-200 bg-stone-50/70 p-3 sm:p-3.5">
               <span className="font-mono text-[10px] font-semibold text-stone-500 uppercase tracking-wider block">
-                Public Price Tier
+                {dataSource === 'illustrative_sample' ? 'Demo Price Tier' : 'Public Price Tier'}
               </span>
               <div className="mt-1 text-[11px] sm:text-xs font-semibold text-stone-800 break-words leading-tight">
                 {listing.price || 'Not publicly listed'}
               </div>
-              <span className="text-[10px] text-stone-400">when available</span>
+              <span className="text-[10px] text-stone-400">{dataSource === 'illustrative_sample' ? 'illustrative sample' : 'when available'}</span>
             </div>
           </div>
 
@@ -161,7 +163,9 @@ export function PropertyDetailModal({
           {listing.dominantComplaints && listing.dominantComplaints.length > 0 && (
             <div>
               <span className="font-mono text-[10px] font-semibold uppercase tracking-wider text-stone-500 block">
-                Detected Review Dissatisfaction Themes
+                {dataSource === 'illustrative_sample'
+                  ? 'Demonstration Review Dissatisfaction Themes'
+                  : 'Detected Review Dissatisfaction Themes'}
               </span>
               <div className="mt-2 flex flex-wrap gap-2">
                 {listing.dominantComplaints.map((c) => (
@@ -182,7 +186,11 @@ export function PropertyDetailModal({
             <div className="flex items-center justify-between">
               <h4 className="font-serif text-sm font-bold text-stone-900 flex items-center gap-2">
                 <Quote className="h-4 w-4 text-teal-700" />
-                <span>Sampled Review Excerpts</span>
+                <span>
+                  {dataSource === 'illustrative_sample'
+                    ? 'Demonstration Review Excerpts'
+                    : 'Sampled Review Excerpts'}
+                </span>
               </h4>
               <span className="font-mono text-xs text-stone-500">
                 {listing.reviewsSample?.length || 0} excerpts
@@ -192,7 +200,7 @@ export function PropertyDetailModal({
             <div className="mt-3 space-y-3">
               {(!listing.reviewsSample || listing.reviewsSample.length === 0) ? (
                 <div className="rounded-2xl border border-dashed border-stone-300 p-6 text-center text-xs text-stone-500">
-                  No public review excerpts sampled for this listing in the active SerpApi batch.
+                  No public review excerpts sampled for this listing in the active {dataSource === 'illustrative_sample' ? 'demonstration sample' : 'SerpApi batch'}.
                 </div>
               ) : (
                 listing.reviewsSample.map((rev) => (
@@ -225,7 +233,10 @@ export function PropertyDetailModal({
           <div className="rounded-2xl bg-stone-100 p-4 text-xs text-stone-600 flex items-start gap-3 border border-stone-200/80">
             <Info className="h-4 w-4 text-stone-500 shrink-0 mt-0.5" />
             <p className="leading-relaxed">
-              <strong>Data Provenance Notice:</strong> Listings and review snippets are public user-submitted feedback extracted via SerpApi Google Maps endpoints. Online feedback is subjective and does not constitute a verified legal, regulatory, or definitive safety assessment.
+              <strong>Data Provenance Notice:</strong>{' '}
+              {dataSource === 'illustrative_sample'
+                ? 'These listing attributes and review excerpts represent calibrated demonstration sample data for interface evaluation. Online feedback is subjective and does not constitute confirmed resident testimony, verified legal status, or definitive safety assessments.'
+                : 'Listings and review snippets are public user-submitted feedback extracted via SerpApi Google Maps endpoints. Online feedback is subjective public reviewer feedback and does not constitute confirmed resident testimony, verified legal status, or definitive safety assessments.'}
             </p>
           </div>
         </div>

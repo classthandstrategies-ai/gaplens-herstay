@@ -14,7 +14,7 @@ import { extractReviewThemes } from './themeExtractor';
  */
 export const METHODOLOGY_LIMITATIONS: string[] = [
   'Maps search results represent a discoverable public sample of accommodations, not an exhaustive registry of all available beds or unregistered PG facilities.',
-  'Online reviews represent subjective resident and visitor feedback and cannot verify physical vacancy rates, financial health, or formal legal compliance.',
+  'Online reviews represent subjective public reviewer feedback and cannot verify physical vacancy rates, resident status, financial health, or formal legal compliance.',
   'Security and safety mentions in customer reviews are unverified personal assertions and do not constitute an official municipal or police security audit.',
   'Distances shown are direct straight-line spherical calculations from the primary hub coordinate and do not reflect peak-hour road traffic or transit detours.',
   'Identified opportunities represent potential supply-quality market gaps indicated by friction in publicly available search data, not guaranteed commercial returns or demand forecasts.',
@@ -28,7 +28,8 @@ export function computeMarketMetrics(
   listings: PlaceListing[],
   radiusKm: number,
   themeAggregates: ThemeAggregate[],
-  totalReviewsSampled: number
+  totalReviewsSampled: number,
+  dataSource?: 'live_serpapi' | 'cached_serpapi' | 'illustrative_sample'
 ): MarketMetrics {
   const listingsInRadius = listings.length;
   const areaKm2 = Math.PI * radiusKm * radiusKm;
@@ -95,7 +96,13 @@ export function computeMarketMetrics(
 
   if (listingsInRadius < 3 || listingsWithReviewsCount < 2 || totalReviewsSampled < 4) {
     evidenceConfidence = 'insufficient';
-    confidenceReason = `Limited search evidence: only ${listingsWithReviewsCount} property/properties have review coverage in this radius (${totalReviewsSampled} reviews sampled across ${listingsInRadius} discovered listings). Findings should be treated as initial directional indicators requiring field validation.`;
+    confidenceReason =
+      dataSource === 'illustrative_sample'
+        ? `Calibrated demonstration sample: limited sample review records (${listingsWithReviewsCount} sample property/properties have review coverage in this radius, ${totalReviewsSampled} review excerpts across ${listingsInRadius} sample listings). Findings represent an illustrative scenario and require field validation.`
+        : `Limited search evidence: only ${listingsWithReviewsCount} property/properties have review coverage in this radius (${totalReviewsSampled} reviews sampled across ${listingsInRadius} discovered listings). Findings should be treated as initial directional indicators requiring field validation.`;
+  } else if (dataSource === 'illustrative_sample') {
+    evidenceConfidence = 'cautious';
+    confidenceReason = `Calibrated demonstration sample representing ${listingsWithReviewsCount} of ${listingsInRadius} sample properties (${totalReviewsSampled} demonstration review excerpts evaluated). Illustrative baseline for interface evaluation; not empirical SerpApi market evidence.`;
   } else if (
     propertyCoverageRatio >= 0.55 &&
     listingsWithReviewsCount >= 8 &&
@@ -104,7 +111,7 @@ export function computeMarketMetrics(
     evidenceConfidence = 'high';
     confidenceReason = `Substantial review coverage representing ${Math.round(
       propertyCoverageRatio * 100
-    )}% of discovered properties (${listingsWithReviewsCount} of ${listingsInRadius}) with ${totalReviewsSampled} sampled resident reviews examined.`;
+    )}% of discovered properties (${listingsWithReviewsCount} of ${listingsInRadius}) with ${totalReviewsSampled} sampled public reviews examined.`;
   } else if (listingsWithReviewsCount >= 3 && totalReviewsSampled >= 8) {
     evidenceConfidence = 'moderate';
     confidenceReason = `Moderate sample coverage: reviews analyzed across ${listingsWithReviewsCount} of ${listingsInRadius} properties (${Math.round(
@@ -153,13 +160,20 @@ export function generateOpportunityHypothesis(
   hub: EmploymentHub,
   metrics: MarketMetrics,
   themeAggregates: ThemeAggregate[],
-  listings: PlaceListing[]
+  listings: PlaceListing[],
+  dataSource: 'live_serpapi' | 'cached_serpapi' | 'illustrative_sample' = 'live_serpapi'
 ): MarketGapHypothesis {
+  const isDemo = dataSource === 'illustrative_sample';
+
   if (metrics.evidenceConfidence === 'insufficient') {
     return {
-      headline: `Insufficient Search Evidence Near ${hub.name}`,
+      headline: isDemo
+        ? `Demonstration Baseline: Insufficient Sample Coverage Near ${hub.name}`
+        : `Insufficient Search Evidence Near ${hub.name}`,
       opportunityType: 'quality_upgrade',
-      summary: `Current public listings within the search perimeter do not provide enough reviews (${metrics.totalReviewsAnalyzed} review(s) across ${metrics.listingsWithReviewsCount} property/properties) to formulate an evidence-backed market conclusion. Expanding radius or verifying unlisted hostels is advised.`,
+      summary: isDemo
+        ? `Calibrated demonstration sample within the search perimeter contains limited review records (${metrics.totalReviewsAnalyzed} review(s) across ${metrics.listingsWithReviewsCount} sample property/properties) to formulate an evidence-backed market conclusion. Expanding radius or verifying unlisted hostels is advised.`
+        : `Current public listings within the search perimeter do not provide enough reviews (${metrics.totalReviewsAnalyzed} review(s) across ${metrics.listingsWithReviewsCount} property/properties) to formulate an evidence-backed market conclusion. Expanding radius or verifying unlisted hostels is advised.`,
       actionableInsights: [
         'Conduct physical field survey across secondary arterial access roads to verify unlisted accommodations.',
         'Investigate whether accommodation providers rely on offline word-of-mouth rather than Google Maps listings.',
@@ -188,19 +202,19 @@ export function generateOpportunityHypothesis(
       observation:
         closeListings.length === 0
           ? 'No discoverable women accommodations mapped within 1.5 km straight-line; potential corridor for closer walk-to-work options subject to local zoning.'
-          : `${closeListings.length} properties detected within 1.5 km. ${
+          : `${closeListings.length} ${isDemo ? 'sample properties' : 'properties'} detected within 1.5 km. ${
               closeComplaints.length > 0
-                ? `Associated review friction includes: ${closeComplaints.join(', ')}.`
+                ? `${isDemo ? 'Demonstration' : 'Associated'} review friction includes: ${closeComplaints.join(', ')}.`
                 : 'Limited negative friction clusters detected in sampled reviews for this belt.'
             }`,
     },
     {
       name: `Transit Corridor Belt (1.5 - 3.0 km)`,
       distanceBand: '1.5 - 3.0 km (straight-line)',
-      observation: `${midListings.length} properties discovered in this middle perimeter. ${
+      observation: `${midListings.length} ${isDemo ? 'sample properties' : 'properties discovered'} in this middle perimeter. ${
         midComplaints.length > 0
-          ? `Sampled resident reviews note friction in: ${midComplaints.join(', ')}.`
-          : 'Represents balanced distance; public reviews show standard residential feedback.'
+          ? `${isDemo ? 'Demonstration review excerpts note' : 'Sampled public reviews note'} friction in: ${midComplaints.join(', ')}.`
+          : `Represents balanced distance; public reviews show standard ${isDemo ? 'sample' : 'accommodation'} feedback.`
       }`,
     },
   ];
@@ -209,9 +223,9 @@ export function generateOpportunityHypothesis(
     targetPockets.push({
       name: `Outer Feeder Belt (> 3.0 km)`,
       distanceBand: '3.0+ km (straight-line)',
-      observation: `${outerListings.length} properties located beyond 3.0 km. ${
+      observation: `${outerListings.length} ${isDemo ? 'sample properties' : 'properties'} located beyond 3.0 km. ${
         outerComplaints.length > 0
-          ? `Sampled reviews reflect: ${outerComplaints.join(', ')}.`
+          ? `${isDemo ? 'Demonstration reviews reflect' : 'Sampled reviews reflect'}: ${outerComplaints.join(', ')}.`
           : 'Located farther from the primary gate; tenant access depends heavily on local road connectivity and transit.'
       }`,
     });
@@ -235,9 +249,13 @@ export function generateOpportunityHypothesis(
 
     if (closeListings.length < 2 && outerListings.length >= 4) {
       zeroThemeType = 'accessibility_pocket';
-      zeroThemeHeadline = `Spatial Distribution Imbalance: Accommodation Supply Concentrated in Outer Belts near ${hub.name}`;
+      zeroThemeHeadline = isDemo
+        ? `Demonstration Thesis: Outer Belts Supply Concentration near ${hub.name}`
+        : `Spatial Distribution Imbalance: Accommodation Supply Concentrated in Outer Belts near ${hub.name}`;
       zeroThemeInsights.push(
-        `While sampled reviews reflect neutral or positive feedback without recurring complaint themes, geographic supply is skewed: only ${closeListings.length} place(s) mapped within 1.5 km versus ${outerListings.length} place(s) beyond 3.0 km.`
+        isDemo
+          ? `While demonstration review excerpts reflect neutral or positive feedback without recurring complaint themes, geographic sample supply is skewed: only ${closeListings.length} sample place(s) mapped within 1.5 km versus ${outerListings.length} place(s) beyond 3.0 km.`
+          : `While sampled reviews reflect neutral or positive feedback without recurring complaint themes, geographic supply is skewed: only ${closeListings.length} place(s) mapped within 1.5 km versus ${outerListings.length} place(s) beyond 3.0 km.`
       );
       zeroThemeInsights.push(
         'Zero negative complaint clusters were detected across analyzed reviews in this market.'
@@ -246,12 +264,16 @@ export function generateOpportunityHypothesis(
       zeroThemeFocusAreas.push('Assessing tenant transit options connecting outer clusters to hub facilities');
     } else {
       zeroThemeType = 'underserved_premium';
-      zeroThemeHeadline = `Inconclusive Deficit Evidence: No Recurring Negative Themes Detected near ${hub.name}`;
+      zeroThemeHeadline = isDemo
+        ? `Demonstration Thesis: Inconclusive Deficit Signals near ${hub.name}`
+        : `Inconclusive Deficit Evidence: No Recurring Negative Themes Detected near ${hub.name}`;
       zeroThemeInsights.push(
-        `Analysis of ${metrics.totalReviewsAnalyzed} review(s) across ${metrics.listingsWithReviewsCount} property/properties yielded zero recurring complaint clusters in hygiene, management, or maintenance.`
+        isDemo
+          ? `Analysis of ${metrics.totalReviewsAnalyzed} demonstration review(s) across ${metrics.listingsWithReviewsCount} sample properties yielded zero recurring complaint clusters in hygiene, management, or maintenance.`
+          : `Analysis of ${metrics.totalReviewsAnalyzed} review(s) across ${metrics.listingsWithReviewsCount} property/properties yielded zero recurring complaint clusters in hygiene, management, or maintenance.`
       );
       zeroThemeInsights.push(
-        'Public search feedback reflects predominantly positive or neutral resident commentary.'
+        `Public search feedback reflects predominantly positive or neutral ${isDemo ? 'sample' : 'reviewer'} commentary.`
       );
       zeroThemeInsights.push(
         'A quality, hygiene, or management deficit cannot be supported without further on-the-ground tenant surveys.'
@@ -260,7 +282,9 @@ export function generateOpportunityHypothesis(
       zeroThemeFocusAreas.push('Verifying physical occupancy rates and pricing models independently');
     }
 
-    const zeroThemeSummary = `Based on an examination of ${metrics.listingsInRadius} discovered accommodations and ${metrics.totalReviewsAnalyzed} sampled resident reviews around ${hub.name}, public search data reveals no significant recurring negative feedback or complaint themes. Evidence is currently inconclusive regarding a service or hygiene deficit; further primary research is recommended before pursuing quality-upgrade positioning.`;
+    const zeroThemeSummary = isDemo
+      ? `Based on a calibrated demonstration baseline of ${metrics.listingsInRadius} sample accommodations and ${metrics.totalReviewsAnalyzed} illustrative review excerpts around ${hub.name}, demonstration data illustrates a scenario with no recurring negative complaint themes. Evidence is currently inconclusive regarding a service or hygiene deficit; this serves as an illustrative demonstration of inconclusive deficit signals.`
+      : `Based on an examination of ${metrics.listingsInRadius} discovered accommodations and ${metrics.totalReviewsAnalyzed} sampled public reviews around ${hub.name}, public search data reveals no significant recurring negative feedback or complaint themes. Evidence is currently inconclusive regarding a service or hygiene deficit; further primary research is recommended before pursuing quality-upgrade positioning.`;
 
     return {
       headline: zeroThemeHeadline,
@@ -283,13 +307,19 @@ export function generateOpportunityHypothesis(
     (primaryComplaint.category === 'hygiene' || primaryComplaint.category === 'maintenance')
   ) {
     opportunityType = 'quality_upgrade';
-    headline = `Quality & Hygiene Deficit: Potential Opening for Professionalized Living near ${hub.name}`;
+    headline = isDemo
+      ? `Demonstration Thesis: Quality & Hygiene Deficit Scenario near ${hub.name}`
+      : `Quality & Hygiene Deficit: Potential Opening for Professionalized Living near ${hub.name}`;
     insights.push(
-      `Recurring resident feedback indicates friction in ${primaryComplaint.label.toLowerCase()} (${primaryComplaint.negativeCount} negative mention(s) across sampled reviews).`
+      isDemo
+        ? `Demonstration review excerpts indicate illustrative friction in ${primaryComplaint.label.toLowerCase()} (${primaryComplaint.negativeCount} negative mention(s) across demonstration sample).`
+        : `Recurring public reviewer feedback indicates friction in ${primaryComplaint.label.toLowerCase()} (${primaryComplaint.negativeCount} negative mention(s) across sampled reviews).`
     );
     if (secondaryComplaint) {
       insights.push(
-        `Secondary friction noted in ${secondaryComplaint.label.toLowerCase()} (${secondaryComplaint.negativeCount} mention(s)).`
+        isDemo
+          ? `Secondary illustrative friction noted in ${secondaryComplaint.label.toLowerCase()} (${secondaryComplaint.negativeCount} mention(s) in sample).`
+          : `Secondary friction noted in ${secondaryComplaint.label.toLowerCase()} (${secondaryComplaint.negativeCount} mention(s)).`
       );
     }
     focusAreas.push('Scheduled housekeeping protocols with documented cleanliness standards');
@@ -299,30 +329,44 @@ export function generateOpportunityHypothesis(
     primaryComplaint.category === 'management'
   ) {
     opportunityType = 'management_deficit';
-    headline = `Management Transparency Opening: Demand for Structured Tenant Agreements near ${hub.name}`;
+    headline = isDemo
+      ? `Demonstration Thesis: Management Transparency Scenario near ${hub.name}`
+      : `Management Transparency Opening: Demand for Structured Tenant Agreements near ${hub.name}`;
     insights.push(
-      `Sampled reviews highlight tenant dissatisfaction regarding deposit return timelines, abrupt notices, or communication responsiveness (${primaryComplaint.negativeCount} mention(s)).`
+      isDemo
+        ? `Demonstration review excerpts reflect illustrative friction regarding deposit return timelines, abrupt notices, or communication responsiveness (${primaryComplaint.negativeCount} mention(s)).`
+        : `Sampled public reviews highlight reviewer dissatisfaction regarding deposit return timelines, abrupt notices, or communication responsiveness (${primaryComplaint.negativeCount} mention(s)).`
     );
     focusAreas.push('Written digital agreements with clear deposit refund terms and explicit timelines');
-    focusAreas.push('Designated resident community managers with transparent dispute resolution');
+    focusAreas.push('Dedicated onsite accommodation managers with transparent dispute resolution');
   } else if (closeListings.length < 3 && outerListings.length > 5) {
     opportunityType = 'accessibility_pocket';
-    headline = `Last-Mile Proximity Void: Accommodation Cluster Concentrated Beyond Immediate Walk to ${hub.name}`;
+    headline = isDemo
+      ? `Demonstration Thesis: Outer Belts Supply Concentration near ${hub.name}`
+      : `Last-Mile Proximity Void: Accommodation Cluster Concentrated Beyond Immediate Walk to ${hub.name}`;
     insights.push(
-      `Only ${closeListings.length} accommodation(s) discovered within 1.5 km straight-line radius of the main gates, while ${outerListings.length} cluster farther out.`
+      isDemo
+        ? `Only ${closeListings.length} sample accommodation(s) mapped within 1.5 km straight-line radius of the main gates, while ${outerListings.length} cluster farther out.`
+        : `Only ${closeListings.length} accommodation(s) discovered within 1.5 km straight-line radius of the main gates, while ${outerListings.length} cluster farther out.`
     );
     focusAreas.push('Investigating property leasing feasibility within direct walking corridors to main entry gates');
     focusAreas.push('Evaluating scheduled shuttle transit for accommodations located in outer belts');
   } else {
     opportunityType = 'underserved_premium';
-    headline = `Accommodation Quality Gap: Potential for Modern Women's Living near ${hub.name}`;
+    headline = isDemo
+      ? `Demonstration Thesis: Accommodation Quality Gap Scenario near ${hub.name}`
+      : `Accommodation Quality Gap: Potential for Modern Women's Living near ${hub.name}`;
     const avgRatingText = metrics.averageRating !== null ? `average rating of ${metrics.averageRating}/5` : 'unrated / mixed ratings';
     insights.push(
-      `Discovered supply visibility is ${metrics.supplyVisibility} (${listings.length} places), with an ${avgRatingText} across rated properties.`
+      isDemo
+        ? `Demonstration supply visibility is ${metrics.supplyVisibility} (${listings.length} sample places), with an ${avgRatingText} across rated sample listings.`
+        : `Discovered public supply visibility is ${metrics.supplyVisibility} (${listings.length} places), with an ${avgRatingText} across rated properties.`
     );
     if (primaryComplaint) {
       insights.push(
-        `Review friction is most visible in ${primaryComplaint.label.toLowerCase()} (${primaryComplaint.negativeCount} mention(s)).`
+        isDemo
+          ? `Review friction is most visible in ${primaryComplaint.label.toLowerCase()} (${primaryComplaint.negativeCount} mention(s) in sample).`
+          : `Review friction is most visible in ${primaryComplaint.label.toLowerCase()} (${primaryComplaint.negativeCount} mention(s)).`
       );
     }
     focusAreas.push('High-reliability broadband connectivity with secondary power backup');
@@ -330,7 +374,9 @@ export function generateOpportunityHypothesis(
   }
 
   const primaryComplaintLabel = primaryComplaint ? primaryComplaint.label.toLowerCase() : 'service consistency';
-  const summary = `Based on an examination of ${metrics.listingsInRadius} discovered accommodations and ${metrics.totalReviewsAnalyzed} sampled resident reviews around ${hub.name}, public search data indicates a potential quality-improvement opportunity in ${primaryComplaintLabel}. Operators who prioritize dependable cleanliness standards, transparent agreements, and reliable amenities can address documented resident friction observed across current offerings in this market.`;
+  const summary = isDemo
+    ? `Based on a calibrated demonstration baseline of ${metrics.listingsInRadius} sample accommodations and ${metrics.totalReviewsAnalyzed} illustrative review excerpts around ${hub.name}, demonstration signals illustrate a potential operator hypothesis in ${primaryComplaintLabel}. As an illustrative scenario for platform evaluation, this synthesis does not represent verified empirical market findings or guaranteed tenant demand; primary on-the-ground validation is required before pursuing development.`
+    : `Based on an examination of ${metrics.listingsInRadius} discovered accommodations and ${metrics.totalReviewsAnalyzed} sampled public reviewer comments around ${hub.name}, public search data indicates a potential quality-improvement opportunity in ${primaryComplaintLabel}. Operators who prioritize dependable cleanliness standards, transparent agreements, and reliable amenities can address documented public reviewer complaints observed across current offerings in this market.`;
 
   return {
     headline,
@@ -401,14 +447,16 @@ export function buildAnalysisReport(
     enrichedListings,
     radiusKm,
     themeAggregates,
-    allReviews.length
+    allReviews.length,
+    dataSource
   );
 
   const opportunityHypothesis = generateOpportunityHypothesis(
     hub,
     metrics,
     themeAggregates,
-    enrichedListings
+    enrichedListings,
+    dataSource
   );
 
   const timestamp = retrievedAt || '2026-10-08T12:00:00.000Z';

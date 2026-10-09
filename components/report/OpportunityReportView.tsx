@@ -79,7 +79,9 @@ export function OpportunityReportView({
             {hub.name} Accommodation Opportunity Briefing
           </h1>
           <p className="mt-1.5 text-sm sm:text-base text-stone-600 font-sans">
-            Spatial distribution, supply saturation, and recurring tenant friction within a{' '}
+            {report.dataSource === 'illustrative_sample'
+              ? 'Illustrative spatial distribution, supply patterns, and demonstration review friction within a '
+              : 'Spatial distribution, supply saturation, and recurring public reviewer friction within a '}
             <strong className="font-mono text-stone-800">{report.radiusKm} km</strong> Haversine straight-line radius of{' '}
             <span className="text-stone-800">{hub.landmark}</span>, {hub.cityName}.
           </p>
@@ -156,11 +158,16 @@ export function OpportunityReportView({
       >
         <div className="flex items-center gap-2">
           <span className="rounded-md bg-stone-100 px-2 py-0.5 font-mono text-[10px] font-bold text-stone-700 uppercase tracking-widest border border-stone-200">
-            Synthesis Thesis
+            {report.dataSource === 'illustrative_sample' ? 'Illustrative Synthesis Thesis' : 'Synthesis Thesis'}
           </span>
+          {report.dataSource === 'illustrative_sample' && (
+            <span className="rounded-md bg-amber-100 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-900 border border-amber-300">
+              Demo Conclusion
+            </span>
+          )}
           <ContextualHelp
             title="Opportunity Hypothesis Methodology"
-            content="A directional synthesis combining observed supply clusters, distance decay, and recurring tenant complaints. Serves as an analytical starting hypothesis requiring field validation."
+            content="A directional synthesis combining observed supply clusters, distance decay, and recurring reviewer complaints. Serves as an analytical starting hypothesis requiring field validation."
           />
         </div>
 
@@ -203,10 +210,16 @@ export function OpportunityReportView({
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-stone-900 font-serif font-bold text-base">
               <TrendingUp className="h-4 w-4 text-teal-700" />
-              <span>Directional Operator Hypotheses</span>
+              <span>
+                {report.dataSource === 'illustrative_sample'
+                  ? 'Directional Demonstration Hypotheses'
+                  : 'Directional Operator Hypotheses'}
+              </span>
             </div>
             <p className="text-xs text-stone-500">
-              Strategic commercial recommendations and operating hypotheses requiring on-the-ground field verification.
+              {report.dataSource === 'illustrative_sample'
+                ? 'Hypothetical commercial recommendations and operating principles for demonstration evaluation.'
+                : 'Strategic commercial recommendations and operating hypotheses requiring on-the-ground field verification.'}
             </p>
             <ul className="space-y-2 text-xs text-stone-700 pt-1">
               {opportunityHypothesis.recommendedFocusAreas.map((area, idx) => (
@@ -260,22 +273,24 @@ export function OpportunityReportView({
         </div>
       </section>
 
-      {/* 4. EVIDENCE RIGOR & RECURRING TENANT FRICTION */}
+      {/* 4. EVIDENCE RIGOR & RECURRING REVIEWER FRICTION */}
       <section aria-label="Evidence coverage and dissatisfaction severity matrix" className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left 7 Cols: Tenant Complaint Severity Ledger */}
+        {/* Left 7 Cols: Reviewer Complaint Severity Ledger */}
         <div className="lg:col-span-7 rounded-2xl border border-stone-200 bg-white p-5 sm:p-6 shadow-2xs">
           <div className="flex items-baseline justify-between">
             <h3 className="font-serif text-lg font-bold text-stone-900">
-              Public Review Dissatisfaction Matrix
+              {report.dataSource === 'illustrative_sample'
+                ? 'Demonstration Review Dissatisfaction Matrix'
+                : 'Public Review Dissatisfaction Matrix'}
             </h3>
             <span className="font-mono text-[11px] text-stone-500">
-              {metrics.totalReviewsAnalyzed} reviews {report.dataSource === 'illustrative_sample' ? 'evaluated (Sample)' : 'evaluated'}
+              {metrics.totalReviewsAnalyzed} reviews {report.dataSource === 'illustrative_sample' ? 'evaluated (Demo Sample)' : 'evaluated'}
             </span>
           </div>
           <p className="text-xs text-stone-500 mt-0.5">
             {report.dataSource === 'illustrative_sample'
               ? 'Illustrative recurrence and severity of pain points in demonstration reviews'
-              : 'Recurrence and severity of tenant pain points in public Google Maps reviews'}
+              : 'Recurrence and severity of reviewer pain points in public Google Maps reviews'}
           </p>
 
           <div className="mt-4 divide-y divide-stone-100">
@@ -317,7 +332,11 @@ export function OpportunityReportView({
           <div>
             <div className="flex items-center gap-2 text-stone-900 font-serif font-bold text-base">
               <ShieldCheck className="h-4 w-4 text-teal-700" />
-              <span>Evidence Strength & Provenance</span>
+              <span>
+                {report.dataSource === 'illustrative_sample'
+                  ? 'Evidence Provenance & Demo Scope'
+                  : 'Evidence Strength & Provenance'}
+              </span>
             </div>
 
             <div className="mt-4 space-y-1">
@@ -328,7 +347,7 @@ export function OpportunityReportView({
                 <span
                   className={`rounded-md border px-2 py-0.5 font-mono text-xs font-bold uppercase ${confidenceBadgeColor}`}
                 >
-                  {metrics.evidenceConfidence}
+                  {report.dataSource === 'illustrative_sample' ? 'DEMO SAMPLE' : metrics.evidenceConfidence}
                 </span>
               </div>
               <p className="text-xs text-stone-600 mt-2 leading-relaxed font-sans">
@@ -345,25 +364,41 @@ export function OpportunityReportView({
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">Discovered Units:</span>
+                <span className="text-stone-500">
+                  {report.dataSource === 'illustrative_sample'
+                    ? 'Sample Accommodation Units:'
+                    : 'Discovered Public Units:'}
+                </span>
                 <span className="font-semibold text-stone-800">
-                  {metrics.listingsInRadius}
+                  {metrics.listingsInRadius} {report.dataSource === 'illustrative_sample' ? '(Sample)' : ''}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">Units with Public Reviews:</span>
+                <span className="text-stone-500">
+                  {report.dataSource === 'illustrative_sample'
+                    ? 'Sample Units with Reviews:'
+                    : 'Units with Public Reviews:'}
+                </span>
                 <span className="font-semibold text-stone-800">
                   {metrics.listingsWithReviewsCount} / {metrics.listingsInRadius}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">Reviews Analyzed:</span>
+                <span className="text-stone-500">
+                  {report.dataSource === 'illustrative_sample'
+                    ? 'Demonstration Reviews Evaluated:'
+                    : 'Public Reviews Analyzed:'}
+                </span>
                 <span className="font-semibold text-stone-800">
                   {metrics.totalReviewsAnalyzed}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-stone-500">Avg Rating (Rated Units):</span>
+                <span className="text-stone-500">
+                  {report.dataSource === 'illustrative_sample'
+                    ? 'Avg Rating (Sampled Units):'
+                    : 'Avg Rating (Rated Units):'}
+                </span>
                 <span className="font-semibold text-stone-800">
                   {metrics.averageRating !== null ? `★ ${metrics.averageRating}` : 'N/A'}
                 </span>
@@ -372,7 +407,15 @@ export function OpportunityReportView({
           </div>
 
           <div className="mt-6 rounded-xl bg-white p-3 border border-stone-200 text-[11px] text-stone-500 leading-relaxed font-sans">
-            Grounded in actual <strong>SerpApi Google Maps & Reviews</strong> response payloads with deduplication and unpenalized missing ratings.
+            {report.dataSource === 'illustrative_sample' ? (
+              <>
+                Populated with <strong>calibrated demonstration sample data</strong> illustrating SerpApi payload structures, spatial clustering, and unpenalized missing ratings without consuming API credits.
+              </>
+            ) : (
+              <>
+                Grounded in discovered public listings and sampled public reviewer feedback via <strong>SerpApi Google Maps & Reviews</strong> with deduplication and unpenalized missing ratings.
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -382,10 +425,14 @@ export function OpportunityReportView({
         <div className="flex items-baseline justify-between">
           <div>
             <h3 className="font-serif text-xl sm:text-2xl font-bold text-stone-900">
-              Discovered Competing Accommodations ({listings.length})
+              {report.dataSource === 'illustrative_sample'
+                ? 'Demonstration Competing Accommodations'
+                : 'Discovered Competing Accommodations'} ({listings.length})
             </h3>
             <p className="text-xs text-stone-500 mt-1">
-              Public listings discovered within the active {report.radiusKm} km straight-line perimeter
+              {report.dataSource === 'illustrative_sample'
+                ? `Sample accommodation listings calibrated for demonstration within the active ${report.radiusKm} km perimeter`
+                : `Public listings discovered within the active ${report.radiusKm} km straight-line perimeter`}
             </p>
           </div>
         </div>
@@ -396,9 +443,15 @@ export function OpportunityReportView({
               <tr>
                 <th scope="col" className="px-4 py-3 font-semibold">Accommodation</th>
                 <th scope="col" className="px-4 py-3 font-semibold">Straight-line Dist.</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Public Rating</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Reviews</th>
-                <th scope="col" className="px-4 py-3 font-semibold">Identified Friction Themes</th>
+                <th scope="col" className="px-4 py-3 font-semibold">
+                  {report.dataSource === 'illustrative_sample' ? 'Rating (Sample)' : 'Public Rating'}
+                </th>
+                <th scope="col" className="px-4 py-3 font-semibold">
+                  {report.dataSource === 'illustrative_sample' ? 'Sample Reviews' : 'Reviews'}
+                </th>
+                <th scope="col" className="px-4 py-3 font-semibold">
+                  {report.dataSource === 'illustrative_sample' ? 'Demo Friction Themes' : 'Identified Friction Themes'}
+                </th>
                 <th scope="col" className="px-4 py-3 font-semibold text-right">Maps Link</th>
               </tr>
             </thead>

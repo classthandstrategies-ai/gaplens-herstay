@@ -302,7 +302,7 @@ export function getSampleListingsForHub(hub: EmploymentHub): PlaceListing[] {
       reviewsSample: [
         {
           id: `rev-${hub.cityKey}-${idx}-1`,
-          author: 'Resident Reviewer',
+          author: 'Sample Reviewer',
           rating: 2,
           date: '2 months ago',
           text: 'Bathrooms are dirty and cleaning is not regular. Caretaker is rude when we ask for deposit refund.',

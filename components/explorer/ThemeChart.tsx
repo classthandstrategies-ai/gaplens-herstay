@@ -7,9 +7,10 @@ import { ShieldAlert, Quote } from 'lucide-react';
 interface ThemeChartProps {
   themes: ThemeAggregate[];
   totalReviewsAnalyzed: number;
+  dataSource?: 'live_serpapi' | 'cached_serpapi' | 'illustrative_sample';
 }
 
-export function ThemeChart({ themes, totalReviewsAnalyzed }: ThemeChartProps) {
+export function ThemeChart({ themes, totalReviewsAnalyzed, dataSource }: ThemeChartProps) {
   const [selectedThemeCategory, setSelectedThemeCategory] = useState<string | null>(
     themes[0]?.category || null
   );
@@ -21,10 +22,21 @@ export function ThemeChart({ themes, totalReviewsAnalyzed }: ThemeChartProps) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 border-b border-[#F0EEE6] pb-4">
         <div>
           <h3 className="font-serif text-lg sm:text-xl font-bold text-[#121518] flex items-center gap-2">
-            <span>Resident Friction Telemetry</span>
+            <span>
+              {dataSource === 'illustrative_sample'
+                ? 'Demonstration Review Friction Telemetry'
+                : 'Public Review Friction Telemetry'}
+            </span>
+            {dataSource === 'illustrative_sample' && (
+              <span className="rounded bg-amber-100 px-2 py-0.5 font-mono text-[10px] font-bold text-amber-900 border border-amber-300 uppercase tracking-wider">
+                Demo Sample
+              </span>
+            )}
           </h3>
           <p className="text-xs text-[#6B7280] mt-0.5 font-medium">
-            Recurring dissatisfaction themes extracted from {totalReviewsAnalyzed} sampled public Google reviews
+            {dataSource === 'illustrative_sample'
+              ? `Illustrative dissatisfaction themes extracted from ${totalReviewsAnalyzed} calibrated demonstration review excerpts (Demo Mode)`
+              : `Recurring dissatisfaction themes extracted from ${totalReviewsAnalyzed} sampled public Google reviews (unverified online feedback)`}
           </p>
         </div>
 
@@ -123,7 +135,7 @@ export function ThemeChart({ themes, totalReviewsAnalyzed }: ThemeChartProps) {
                 <div className="mt-3.5 rounded-lg bg-amber-50/90 p-3 text-xs text-amber-900 border border-amber-200/80 flex items-start gap-2">
                   <ShieldAlert className="h-4 w-4 shrink-0 text-amber-700 mt-0.5" />
                   <p className="text-[11px] leading-relaxed">
-                    <strong>Subjective Feedback Disclaimer:</strong> Mentions represent individual reviewer impressions (e.g. evening lighting, street presence). These are unverified public assertions and do not represent verified safety findings or official municipal audits.
+                    <strong>Subjective Feedback Disclaimer:</strong> Mentions represent individual reviewer impressions (e.g. evening lighting, street presence). These are unverified public assertions from online reviews and do not represent confirmed resident testimony or official municipal audits.
                   </p>
                 </div>
               )}
@@ -131,7 +143,9 @@ export function ThemeChart({ themes, totalReviewsAnalyzed }: ThemeChartProps) {
               {/* Citations List */}
               <div className="mt-4 space-y-2.5">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#9CA3AF]">
-                  Representative Review Evidence Quotes:
+                  {dataSource === 'illustrative_sample'
+                    ? 'Representative Demonstration Review Excerpts:'
+                    : 'Representative Public Review Excerpts:'}
                 </span>
                 {activeTheme.representativeSnippets.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-[#D5D1C5] p-5 text-center text-xs text-[#6B7280]">

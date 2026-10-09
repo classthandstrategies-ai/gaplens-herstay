@@ -9,12 +9,14 @@ interface PropertyCardProps {
   listing: PlaceListing;
   isSelected: boolean;
   onSelect: () => void;
+  dataSource?: 'live_serpapi' | 'cached_serpapi' | 'illustrative_sample';
 }
 
 export function PropertyCard({
   listing,
   isSelected,
   onSelect,
+  dataSource,
 }: PropertyCardProps) {
   const ratingBadge =
     listing.rating !== null ? (
@@ -74,7 +76,8 @@ export function PropertyCard({
       {/* Pricing if available */}
       {listing.price && (
         <div className="mt-1.5 text-[11px] font-semibold text-stone-800 break-words">
-          Public Rent: <span className="font-mono text-teal-800 font-bold">{listing.price}</span>
+          {dataSource === 'illustrative_sample' ? 'Sample Rent:' : 'Public Rent:'}{' '}
+          <span className="font-mono text-teal-800 font-bold">{listing.price}</span>
         </div>
       )}
 
@@ -97,7 +100,7 @@ export function PropertyCard({
       <div className="mt-2.5 flex items-center justify-between text-[11px] pt-2 border-t border-[#F0EEE6] text-[#6B7280]">
         <span className="font-mono">
           {listing.reviewCount > 0
-            ? `${listing.reviewCount} public review(s)`
+            ? `${listing.reviewCount} ${dataSource === 'illustrative_sample' ? 'sample review(s)' : 'public review(s)'}`
             : 'No public reviews'}
         </span>
 

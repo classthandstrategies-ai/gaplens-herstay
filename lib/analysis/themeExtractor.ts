@@ -132,7 +132,7 @@ const THEME_DEFINITIONS: ThemeDefinition[] = [
   },
   {
     category: 'safety',
-    label: 'Resident-Reported Security Notes',
+    label: 'Reviewer-Reported Security Notes',
     description: 'Unverified reviewer statements concerning nighttime security guards, CCTV status, or deserted lanes.',
     negativeKeywords: [
       /\b(security guard\s+(sleeping|absent|not there|missing)|no guard|cctv not working|broken lock|felt unsafe|scary at night|deserted road|harassment)\b/i,
@@ -269,7 +269,7 @@ export function extractReviewThemes(
 
     let impactSummary = `Mentioned negatively in ${stat.negative} reviewer account(s).`;
     if (def.category === 'safety') {
-      impactSummary = `${stat.negative} subjective resident review(s) noted evening lighting or guard absence. (Unverified online feedback; not an official safety finding).`;
+      impactSummary = `${stat.negative} subjective public review(s) noted evening lighting or guard absence. (Unverified online feedback; not an official safety finding).`;
     }
 
     return {

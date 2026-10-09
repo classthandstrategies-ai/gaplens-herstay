@@ -382,4 +382,102 @@ describe('Regression: Data Integrity & Evidence Guardrails', () => {
     expect(isAuthorized(fakeAdminSecret, null, undefined)).toBe(false);
     expect(isAuthorized(fakeApiKey, null, undefined)).toBe(false);
   });
+
+  it('differentiates illustrative demonstration data from live SerpApi data in hypothesis and metrics', () => {
+    const sampleListings: PlaceListing[] = [
+      {
+        id: 'p1',
+        title: 'Demo Stay 1',
+        address: 'Nagawara',
+        rating: 3.8,
+        reviewCount: 15,
+        coordinates: { lat: 13.048, lng: 77.621 },
+        distanceKm: 0.5,
+        reviewsSample: [
+          { id: 'r1', author: 'User A', rating: 2, text: 'Cleanliness was poor and bathroom dirty' },
+        ],
+      },
+      {
+        id: 'p2',
+        title: 'Demo Stay 2',
+        address: 'Hebbal',
+        rating: 4.0,
+        reviewCount: 20,
+        coordinates: { lat: 13.05, lng: 77.623 },
+        distanceKm: 0.8,
+        reviewsSample: [
+          { id: 'r2', author: 'User B', rating: 2, text: 'Room cleaning is infrequent' },
+        ],
+      },
+      {
+        id: 'p3',
+        title: 'Demo Stay 3',
+        address: 'Thanisandra',
+        rating: 3.5,
+        reviewCount: 25,
+        coordinates: { lat: 13.052, lng: 77.625 },
+        distanceKm: 1.1,
+        reviewsSample: [
+          { id: 'r3', author: 'User C', rating: 2, text: 'Dusty rooms and broken geyser' },
+          { id: 'r4', author: 'User D', rating: 2, text: 'Washroom not cleaned daily' },
+        ],
+      },
+    ];
+
+    // 1. Illustrative Sample Mode
+    const demoReport = buildAnalysisReport(
+      dummyHub,
+      3.5,
+      sampleListings,
+      'illustrative_sample',
+      0,
+      '2026-10-08T12:00:00.000Z'
+    );
+
+    expect(demoReport.dataSource).toBe('illustrative_sample');
+    expect(demoReport.opportunityHypothesis.headline).toContain('Demonstration Thesis:');
+    expect(demoReport.opportunityHypothesis.summary).toContain('illustrative scenario for platform evaluation');
+    expect(demoReport.opportunityHypothesis.summary).toContain('does not represent verified empirical market findings');
+    expect(demoReport.metrics.confidenceReason).toContain('Calibrated demonstration sample');
+
+    // 2. Live SerpApi Mode
+    const liveReport = buildAnalysisReport(
+      dummyHub,
+      3.5,
+      sampleListings,
+      'live_serpapi',
+      240,
+      '2026-10-08T12:00:00.000Z'
+    );
+
+    expect(liveReport.dataSource).toBe('live_serpapi');
+    expect(liveReport.opportunityHypothesis.headline).not.toContain('Demonstration Thesis:');
+    expect(liveReport.opportunityHypothesis.summary).toContain('sampled public reviewer comments');
+    expect(liveReport.opportunityHypothesis.summary).not.toContain('illustrative scenario');
+    expect(liveReport.opportunityHypothesis.summary).not.toContain('resident reviews');
+    expect(liveReport.metrics.confidenceReason).not.toContain('demonstration');
+  });
+
+  it('strictly ensures no claims of resident reviews or confirmed resident testimony exist in generated reports', () => {
+    const listings: PlaceListing[] = [
+      {
+        id: 'p1',
+        title: 'Stay 1',
+        address: 'Nagawara',
+        rating: 3.5,
+        reviewCount: 12,
+        coordinates: { lat: 13.048, lng: 77.621 },
+        distanceKm: 0.6,
+      },
+    ];
+
+    for (const source of ['illustrative_sample', 'live_serpapi', 'cached_serpapi'] as const) {
+      const report = buildAnalysisReport(dummyHub, 3.5, listings, source, 100);
+      const reportString = JSON.stringify(report).toLowerCase();
+      expect(reportString).not.toContain('resident review');
+      expect(reportString).not.toContain('resident testimony');
+      expect(reportString).not.toContain('resident friction');
+    }
+  });
 });
+
