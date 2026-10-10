@@ -1,3 +1,11 @@
+<!-- BEGIN GAPLENS DEMO LINKS -->
+[![GapLens HerStay Intelligence banner](assets/gaplens-banner.svg)](https://drive.google.com/file/d/1U8oA1Ok2lxM437WjfYnYcTeWnkhrP2lk/view?usp=drive_link)
+
+**[▶ Watch the Demo Video](https://drive.google.com/file/d/1U8oA1Ok2lxM437WjfYnYcTeWnkhrP2lk/view?usp=drive_link)** · **[↗ Launch Live Application](https://gaplens-herstay.vercel.app)**
+
+*SerpApi India Hackathon 2026 | Commerce & Market Intelligence*
+<!-- END GAPLENS DEMO LINKS -->
+
 # GapLens — HerStay Intelligence
 
 > **Discover where better women's housing is needed.**  
