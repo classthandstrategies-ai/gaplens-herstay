@@ -479,5 +479,130 @@ describe('Regression: Data Integrity & Evidence Guardrails', () => {
       expect(reportString).not.toContain('resident friction');
     }
   });
+
+  it('maintains reviewFrictionIndex at 0 and zero complaint citations when sampled reviews contain positive or neutral text', () => {
+    const listingsWithPositiveReviews: PlaceListing[] = [
+      {
+        id: 'p1',
+        title: 'Happy Stay 1',
+        address: 'Nagawara',
+        rating: 4.8,
+        reviewCount: 30,
+        coordinates: { lat: 13.048, lng: 77.621 },
+        distanceKm: 0.5,
+        reviewsSample: [
+          {
+            id: 'r1',
+            author: 'A',
+            rating: 5,
+            text: 'The rooms are spotless clean and not dirty at all. Food is tasty and wifi is fast.',
+          },
+          {
+            id: 'r2',
+            author: 'B',
+            rating: 5,
+            text: 'No problem with wifi, deposit was refunded smoothly and staff is very polite.',
+          },
+        ],
+      },
+      {
+        id: 'p2',
+        title: 'Happy Stay 2',
+        address: 'Nagawara',
+        rating: 4.9,
+        reviewCount: 25,
+        coordinates: { lat: 13.049, lng: 77.622 },
+        distanceKm: 0.8,
+        reviewsSample: [
+          {
+            id: 'r3',
+            author: 'C',
+            rating: 5,
+            text: 'Very safe environment for women, peaceful location and reasonable rent.',
+          },
+        ],
+      },
+      {
+        id: 'p3',
+        title: 'Happy Stay 3',
+        address: 'Nagawara',
+        rating: 4.7,
+        reviewCount: 20,
+        coordinates: { lat: 13.05, lng: 77.623 },
+        distanceKm: 1.0,
+        reviewsSample: [
+          {
+            id: 'r4',
+            author: 'D',
+            rating: 5,
+            text: 'Great amenities and clean rooms.',
+          },
+        ],
+      },
+    ];
+
+    const report = buildAnalysisReport(
+      dummyHub,
+      3.5,
+      listingsWithPositiveReviews,
+      'live_serpapi'
+    );
+
+    // Friction index must be 0
+    expect(report.metrics.reviewFrictionIndex).toBe(0);
+    expect(report.metrics.totalReviewsAnalyzed).toBe(4);
+
+    // Every theme category must have 0 negativeCount and 0% frequency
+    for (const theme of report.themeBreakdown) {
+      expect(theme.negativeCount).toBe(0);
+      expect(theme.frequencyPercentage).toBe(0);
+      expect(theme.representativeSnippets.filter((s) => s.sentiment === 'negative')).toHaveLength(0);
+    }
+
+    // Hypothesis must reflect inconclusive deficit evidence
+    expect(report.opportunityHypothesis.headline).toContain('Inconclusive Deficit Evidence');
+  });
+
+  it('ensures 1-star ratings without review text do not generate complaint citations or inflate theme counts', () => {
+    const listingsWithStarOnlyReviews: PlaceListing[] = [
+      {
+        id: 'p_unhappy_silent',
+        title: 'Silent PG',
+        address: 'Nagawara',
+        rating: 1.0, // Low overall rating
+        reviewCount: 5,
+        coordinates: { lat: 13.048, lng: 77.621 },
+        distanceKm: 0.3,
+        reviewsSample: [
+          {
+            id: 'r_silent_1',
+            author: 'Anonymous 1',
+            rating: 1, // 1-star rating but empty text
+            text: '',
+          },
+          {
+            id: 'r_silent_2',
+            author: 'Anonymous 2',
+            rating: 1, // 1-star rating but whitespace
+            text: '   ',
+          },
+        ],
+      },
+    ];
+
+    const report = buildAnalysisReport(
+      dummyHub,
+      3.5,
+      listingsWithStarOnlyReviews,
+      'live_serpapi'
+    );
+
+    // No themes should have negative citations generated
+    const totalNegative = report.themeBreakdown.reduce((sum, t) => sum + t.negativeCount, 0);
+    expect(totalNegative).toBe(0);
+    for (const theme of report.themeBreakdown) {
+      expect(theme.representativeSnippets).toHaveLength(0);
+    }
+  });
 });
 

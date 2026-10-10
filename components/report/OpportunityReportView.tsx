@@ -293,6 +293,16 @@ export function OpportunityReportView({
               : 'Recurrence and severity of reviewer pain points in public Google Maps reviews'}
           </p>
 
+          {metrics.totalReviewsAnalyzed > 0 &&
+            themeBreakdown.reduce((sum, t) => sum + t.negativeCount, 0) === 0 && (
+              <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50 p-3.5 text-xs text-stone-700 flex items-start gap-2.5">
+                <Info className="h-4 w-4 shrink-0 text-stone-500 mt-0.5" />
+                <p className="font-medium text-stone-800 leading-relaxed">
+                  No matching negative themes detected in the {metrics.totalReviewsAnalyzed} sampled reviews. This does not establish that the properties are complaint-free.
+                </p>
+              </div>
+            )}
+
           <div className="mt-4 divide-y divide-stone-100">
             {themeBreakdown.slice(0, 6).map((theme) => (
               <div

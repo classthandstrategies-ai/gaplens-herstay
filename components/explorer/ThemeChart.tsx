@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { ThemeAggregate } from '@/lib/types';
-import { ShieldAlert, Quote } from 'lucide-react';
+import { ShieldAlert, Quote, Info, AlertCircle } from 'lucide-react';
 
 interface ThemeChartProps {
   themes: ThemeAggregate[];
@@ -16,6 +16,7 @@ export function ThemeChart({ themes, totalReviewsAnalyzed, dataSource }: ThemeCh
   );
 
   const activeTheme = themes.find((t) => t.category === selectedThemeCategory) || themes[0];
+  const totalNegativeCount = themes.reduce((sum, t) => sum + t.negativeCount, 0);
 
   return (
     <div className="rounded-2xl border border-[#E8E6DF] bg-white p-5 sm:p-6 shadow-2xs">
@@ -52,12 +53,45 @@ export function ThemeChart({ themes, totalReviewsAnalyzed, dataSource }: ThemeCh
         </div>
       </div>
 
+      {/* Meaningful empty state: sampled reviews analyzed but zero negative complaints matched */}
+      {totalReviewsAnalyzed > 0 && totalNegativeCount === 0 && (
+        <div className="mt-4 rounded-xl border border-stone-200 bg-stone-50 p-4 text-xs text-stone-700 flex items-start gap-2.5">
+          <Info className="h-4 w-4 shrink-0 text-stone-500 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-semibold text-stone-900">
+              No matching negative themes detected in the {totalReviewsAnalyzed} sampled reviews. This does not establish that the properties are complaint-free.
+            </p>
+            <p className="text-[11px] text-stone-600 leading-relaxed">
+              Discovered public feedback did not contain recurring complaints matching the 9 tracked operational categories. Further on-the-ground surveys are recommended.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Meaningful empty state: zero reviews available in search perimeter */}
+      {totalReviewsAnalyzed === 0 && (
+        <div className="mt-4 rounded-xl border border-dashed border-stone-300 bg-stone-50/80 p-4 text-xs text-stone-700 flex items-start gap-2.5">
+          <AlertCircle className="h-4 w-4 shrink-0 text-stone-400 mt-0.5" />
+          <div className="space-y-1">
+            <p className="font-semibold text-stone-900">
+              No public review text available in the sampled properties within this search perimeter.
+            </p>
+            <p className="text-[11px] text-stone-600 leading-relaxed">
+              Discovered accommodations currently have zero sampled text reviews or rely primarily on offline word-of-mouth. Friction telemetry cannot be evaluated without online review content.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Main theme progress bars */}
       <div className="mt-5 grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div className="lg:col-span-6 space-y-2">
           {themes.map((theme) => {
             const isSelected = selectedThemeCategory === theme.category;
-            const barWidth = Math.min(100, Math.max(8, theme.frequencyPercentage * 2.2));
+            const barWidth =
+              theme.negativeCount === 0 || theme.frequencyPercentage === 0
+                ? 0
+                : Math.min(100, Math.max(2, theme.frequencyPercentage * 2.2));
 
             const barColor =
               theme.severity === 'high'
@@ -149,7 +183,11 @@ export function ThemeChart({ themes, totalReviewsAnalyzed, dataSource }: ThemeCh
                 </span>
                 {activeTheme.representativeSnippets.length === 0 ? (
                   <div className="rounded-xl border border-dashed border-[#D5D1C5] p-5 text-center text-xs text-[#6B7280]">
-                    No negative quotes detected for this category in the current sample.
+                    {totalReviewsAnalyzed === 0
+                      ? 'No public reviews were available to evaluate for this category in the current search perimeter.'
+                      : totalNegativeCount === 0
+                      ? `No matching negative quotes detected for ${activeTheme.label} across the ${totalReviewsAnalyzed} sampled reviews.`
+                      : `No negative quotes detected for ${activeTheme.label} in the current sample.`}
                   </div>
                 ) : (
                   activeTheme.representativeSnippets.map((snippet, idx) => (
