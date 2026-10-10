@@ -1,5 +1,6 @@
 <!-- BEGIN GAPLENS DEMO LINKS -->
-[![GapLens HerStay Intelligence banner](assets/gaplens-banner.svg)](https://drive.google.com/file/d/1U8oA1Ok2lxM437WjfYnYcTeWnkhrP2lk/view?usp=drive_link)
+<img width="1536" height="1024" alt="GapLens_ Safer Stays, Stronger Futures" src="https://github.com/user-attachments/assets/af775683-a6d0-44b0-97b8-d79a2d89528f" />
+
 
 **[▶ Watch the Demo Video](https://drive.google.com/file/d/1U8oA1Ok2lxM437WjfYnYcTeWnkhrP2lk/view?usp=drive_link)** · **[↗ Launch Live Application](https://gaplens-herstay.vercel.app)**
 
