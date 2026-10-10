@@ -118,6 +118,7 @@ const THEME_DEFINITIONS: ThemeDefinition[] = [
       /\b(warden|caretaker|cleaning\s+staff|owner|staff|landlord)\s+(enters?|barges?|walks?|comes?)\s+(in\s+)?without\s+(knocking|permission|informing)/i,
       /\b(no|zero|lack\s+of)\s+privacy\b/i,
       /\b(intrusive|interfering|suffocating|disturbing|no\s+personal\s+space|feels?\s+like\s+a?\s*jail)\b/i,
+      /\b(rooms?\s+(are|is)?\s*(too\s+)?(congested|cramped|tiny|small)|cramped\s+rooms?|congested\s+rooms?|lack\s+of\s+(space|personal\s+space))\b/i,
       /\b(no|not\s+allowed)\s+(guests?|friends?|visitors?|parents?)\b/i,
       /\b(guests?|friends?|visitors?|parents?)\s+(are\s+)?not\s+allowed\b/i,
     ],
@@ -372,9 +373,9 @@ export function extractReviewThemes(
       positiveCount: stat.positive,
       frequencyPercentage,
       severity,
-      // Sample representative negative snippets first
+      // Citations in friction telemetry must strictly represent negative complaint evidence
       representativeSnippets: stat.snippets
-        .sort((a, b) => (a.sentiment === 'negative' && b.sentiment !== 'negative' ? -1 : 1))
+        .filter((s) => s.sentiment === 'negative')
         .slice(0, 6),
       impactSummary,
     };
